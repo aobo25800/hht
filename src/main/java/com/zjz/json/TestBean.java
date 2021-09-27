@@ -17,19 +17,19 @@ public class TestBean {
     @Data
     @ToString
     public static class SchoolParam {
-        private XydPayParam term3;
+        private PayParam term3;
 
-        private XydPayParam term6;
+        private PayParam term6;
 
-        private XydPayParam term12;
+        private PayParam term12;
 
-        private XydPayParam term24;
+        private PayParam term24;
 
-        private XydPayParam term36;
+        private PayParam term36;
 
         @Data
         @ToString
-        public static class XydPayParam {
+        public static class PayParam {
             private String shopNo;
         }
     }
