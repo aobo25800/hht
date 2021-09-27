@@ -1,0 +1,66 @@
+{
+"allMerchant": true,
+"amountIntoTime": null,
+"channelCode": "zfb",
+"channelInterface": null,
+"channelName": "支付宝",
+"channelPic": "https://hoogoo-site.oss-cn-beijing.aliyuncs.com/20200801140515-icon-ali-pay.png",
+"channelPriority": 1,
+"highestAmount": null,
+"id": 38,
+"installmentsFlg": null,
+"lowestAmount": null,
+"operator": "admin",
+"paymentMethods": [
+  {
+    "configSceneType": 1,
+    "methodCode": "alipay",
+    "paymentTermDetails": [
+      {
+        "commissionScale": 1,
+        "highestAmount": 10000,
+        "id": 1720,
+        "lowestAmount": 0.01,
+        "term": 1
+      }
+    ]
+  },
+  {
+  "configSceneType": 0,
+  "methodCode": "alipay",
+  "paymentTermDetails": [
+  {
+  "commissionScale": 1,
+  "highestAmount": 10000,
+  "id": 1721,
+  "lowestAmount": 0.01,
+  "term": 1
+  },
+
+  {
+    "commissionScale": 0,
+    "highestAmount": 0,
+    "id": 1722,
+    "lowestAmount": 0,
+    "term": 3
+  },
+    {
+
+"commissionScale": 666.258,
+"highestAmount": 666.82,
+"lowestAmount": 1,
+"term": 6
+
+    }
+  ]}
+],
+
+
+"remark": "8",
+"shop_type": "all",
+"splitFlg": null,
+"splitScale": null,
+"status": 1,
+"supportMerchantsDetails": null,
+"type": null
+}
