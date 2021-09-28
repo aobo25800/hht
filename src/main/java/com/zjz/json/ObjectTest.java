@@ -15,3 +15,6 @@ public class ObjectTest {
     private Long kindergartenId;
     private Map<String, String> kindergartenParam;
 }
+
+
+
