@@ -6,6 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.PriorityQueue;
+import java.util.Queue;
 
 /**
  * @author zjz
@@ -54,7 +56,6 @@ public class MybatisApplication {
             }
             System.out.println(mybatisApplication1.getName());
         }
-
     }
 }
 
