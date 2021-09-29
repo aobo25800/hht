@@ -5,4 +5,5 @@ package com.zjz.mybatisTest;
  * @date 2021/9/27 10:10
  */
 public class MybatisApplication {
+
 }
