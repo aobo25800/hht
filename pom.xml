@@ -6,7 +6,11 @@
 
     <groupId>com.zjz</groupId>
     <artifactId>hht</artifactId>
+    <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
+    <modules>
+        <module>zjz-xxl-job</module>
+    </modules>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
