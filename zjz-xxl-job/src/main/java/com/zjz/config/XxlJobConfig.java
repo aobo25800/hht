@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * @author zjz
+ * @author com.zjz
  * @date 2021/10/9 9:47
  */
 @Configuration
