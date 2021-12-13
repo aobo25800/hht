@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+    <settings>
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+    </settings>
+    <!-- 别名 -->
+    <typeAliases>
+        <package name="pojo"/>
+    </typeAliases>
+    <!-- 数据库环境 -->
+    <environments default="development">
+        <environment id="development">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver" value="com.mysql.jdbc.Driver"/>
+                <property name="url" value="jdbc:mysql://192.168.0.193:3306/panda-platform?characterEncoding=UTF-8"/>
+                <property name="username" value="root"/>
+                <property name="password" value="yadb@123"/>
+            </dataSource>
+        </environment>
+    </environments>
+
+<!--    <configuration>-->
+<!--        &lt;!&ndash; 开启驼峰映射 ，为自定义的SQL语句服务&ndash;&gt;-->
+<!--        &lt;!&ndash;设置启用数据库字段下划线映射到java对象的驼峰式命名属性，默认为false&ndash;&gt;-->
+<!--        <settings>-->
+<!--            <setting name="mapUnderscoreToCamelCase" value="true"/>-->
+<!--        </settings>-->
+
+<!--    </configuration>-->
+
+    <!-- 映射文件 -->
+    <mappers>
+        <mapper resource="mybatis-config/mapper/ShopsMapper.xml"/>
+    </mappers>
+
+</configuration>

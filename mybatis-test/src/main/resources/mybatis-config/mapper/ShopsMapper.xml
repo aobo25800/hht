@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.zjz.db.mapper.ShopsMapper">
+
+    <!-- 查询所有网站信息 -->
+    <select id="selectShops" resultType="com.zjz.db.model.Shops">
+        select * from shops
+    </select>
+
+    <update id="updateShops" parameterType="com.zjz.db.model.Shops">
+        update shops set service_contracts = #{serviceContracts} where id = #{id}
+    </update>
+
+</mapper>

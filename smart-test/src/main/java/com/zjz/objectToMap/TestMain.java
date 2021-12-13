@@ -1,6 +1,8 @@
 package com.zjz.objectToMap;
 
-import cn.hutool.json.JSONUtil;
+import cn.hutool.core.codec.Base64;
+
+import java.io.File;
 
 /**
  * @author com.com.zjz
@@ -9,16 +11,48 @@ import cn.hutool.json.JSONUtil;
 public class TestMain {
 
     public static void main(String[] args) {
-        ObjectToMap objectToMap = new ObjectToMap();
-        objectToMap.setAge(10);
-        objectToMap.setName("com/com.zjz");
+//        data:application/pdf;base64,
+        File file = new File("");
+        String pdf = "";
 
-        // 对象转map
-//        Map<String, Object> stringObjectMap = BeanUtil.beanToMap(objectToMap);
-//        System.out.println(stringObjectMap);
+        byte[] decode = Base64.decode(pdf);
+        Base64.decodeToFile(pdf, file);
 
-        // 对象转json
-        System.out.println(JSONUtil.toJsonStr(objectToMap));
+//        Base64.decodeToFile(pdf, file);
+//        byte[] decode = Base64.decode(pdf);
+//        FileUtil.writeBytes(decode, file);
+//        ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
+//                10,
+//                20,
+//                60,
+//                TimeUnit.SECONDS,
+//                new ArrayBlockingQueue<>(100),
+//                new ThreadFactory() {
+//                    private final AtomicInteger threadNumber = new AtomicInteger(1);
+//
+//                    @Override
+//                    public Thread newThread(Runnable r) {
+//                        Thread t = new Thread(r);
+//                        t.setName("CommonPool-" + threadNumber.getAndIncrement());
+//                        t.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+//                            @Override
+//                            public void uncaughtException(Thread t, Throwable e) {
+//                                System.out.println("Thread: " + t + " exited with Exception:{}");
+//                            }
+//                        });
+//                        return t;
+//                    }
+//                }
+//        );
+//
+//        threadPoolExecutor.execute(
+//                TestMain::func
+//        );
+//        System.out.println("main end");
+    }
+
+    public static void func() {
+        System.out.println("线程执行了");
     }
 
 }

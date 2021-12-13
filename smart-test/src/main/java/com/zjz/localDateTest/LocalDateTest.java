@@ -8,7 +8,9 @@ import java.time.LocalDate;
  */
 public class LocalDateTest {
     public static void main(String[] args) {
-        LocalDate localDate = LocalDate.now().minusDays(1);
-        System.out.println(localDate.toString());
+        LocalDate localDate = LocalDate.now().plusDays(3);
+        System.out.println(localDate.getDayOfMonth());
+        System.out.println();
+
     }
 }

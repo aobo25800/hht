@@ -1,6 +1,11 @@
 package com.zjz;
 
+import cn.hutool.json.JSONUtil;
+
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author com.com.zjz
@@ -33,11 +38,24 @@ public class bigDecimalTest {
 
         // 金额对比
 
-        System.out.println(new BigDecimal("10.99").compareTo(new BigDecimal("12.99")));     // 前者大于后者，返回值为：1  两者相等，返回值为：0 前者小于后者，返回值为：-1
+//        System.out.println(new BigDecimal("10.99").compareTo(new BigDecimal("12.99")));
+// 前者大于后者，返回值为：1  两者相等，返回值为：0 前者小于后者，返回值为：-1
 
         // 金额转字符串
 //        BigDecimal c = new BigDecimal("12.12");
 //        System.out.println(c.toString());
+
+//        BigDecimal bigDecimal = new BigDecimal("12.0900");
+//        System.out.println(bigDecimal.setScale(2, RoundingMode.DOWN));
+        List<String> list = new ArrayList<>();
+
+        list.add("as");
+        list.add("name");
+
+        System.out.println(JSONUtil.toJsonStr(list));
+
+        String jsonStr = JSONUtil.toJsonStr(list);
+
 
 
     }
