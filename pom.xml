@@ -15,6 +15,7 @@
         <module>zjz-demo</module>
         <module>zjz-spring-boot</module>
         <module>lettuce-test</module>
+        <module>zipoutput-stream-test</module>
     </modules>
 
     <properties>
@@ -57,6 +58,12 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>19.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.baidubce</groupId>
+            <artifactId>api-explorer-sdk</artifactId>
+            <version>1.0.0</version>
         </dependency>
 
     </dependencies>

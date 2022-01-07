@@ -8,13 +8,5 @@ import lombok.Data;
  */
 @Data
 public class XYDMailLogVO {
-    private String receiveMail;
 
-    private String amount;
-
-    private String sendTime;
-
-    private Integer status;
-
-    private Integer anchor;
 }

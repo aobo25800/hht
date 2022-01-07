@@ -1,15 +1,13 @@
-package com.zjz.db.kindergarten.pay.channel;
-
+package com.zjz.demo;
 
 import java.io.IOException;
 
-
 /**
  * @author zjz
- * @date 2021/11/8 17:28
+ * @date 2021/11/15 15:50
  */
-public class ChannelMain {
+public class ExceptionMain {
     public static void main(String[] args) throws IOException {
-
     }
+
 }

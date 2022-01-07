@@ -6,10 +6,10 @@
 <mapper namespace="com.zjz.db.mapper.ShopsMapper">
 
     <!-- 查询所有网站信息 -->
-    <select id="selectShops" resultType="com.zjz.db.model.Shops">
+    <select id="selectByAddressTest" resultType="com.zjz.demo.demo1.dao.AddressTest">
+        select * from areas
     </select>
 
-    <update id="updateShops" parameterType="com.zjz.db.model.Shops">
-    </update>
+
 
 </mapper>

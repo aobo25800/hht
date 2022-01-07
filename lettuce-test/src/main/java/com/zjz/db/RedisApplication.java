@@ -17,18 +17,18 @@ public class RedisApplication {
         StatefulRedisConnection<String, String> connection = redisClient.connect();
         RedisCommands<String, String> syncCommands = connection.sync();
 
-//        syncCommands.set("key", "Hello, Redis!");
-//        String zjz = syncCommands.get("zjz");
-//        System.out.println(zjz);
+        syncCommands.set("key", "Hello, Redis!");
+        String zjz = syncCommands.get("zjz");
+        System.out.println(zjz);
 //
 //        syncCommands.expire("zjz", 30L);
 
 //        Long lpush = syncCommands.lpush("zjzlist", "zjz1", "zjz2", "zjz3");
 //        System.out.println(lpush);
-        List<String> zjzlist = syncCommands.lrange("zjzlist", 0, 6);
-        System.out.println(zjzlist);
-
-        connection.close();
-        redisClient.shutdown();
+//        List<String> zjzlist = syncCommands.lrange("zjzlist", 0, 6);
+//        System.out.println(zjzlist);
+//
+//        connection.close();
+//        redisClient.shutdown();
     }
 }

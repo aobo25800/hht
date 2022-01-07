@@ -1,5 +1,6 @@
 package com.zjz.dateUtil;
 
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 
 import java.util.Date;
@@ -10,12 +11,9 @@ import java.util.Date;
  */
 public class DateUtilModelTest {
     public static void main(String[] args) {
-        Date date = new Date(2021,10, 25);
-        Date date1 = new Date(2999, 1, 1);
-
-        int compare = DateUtil.compare(date1, date);
-        System.out.println(compare);
-
-
+        String time = "2016年09月09日";
+        Date parse = DateUtil.parse(time);
+//        String format = DateUtil.format(parse, "yyyy-MM-dd");
+        System.out.println(parse);
     }
 }
