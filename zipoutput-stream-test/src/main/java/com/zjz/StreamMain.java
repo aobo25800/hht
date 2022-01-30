@@ -4,8 +4,6 @@ import cn.hutool.core.codec.Base64;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.http.HttpUtil;
-import com.google.common.base.Stopwatch;
-import org.apache.commons.io.FileUtils;
 
 import java.io.*;
 import java.text.DateFormat;

@@ -1,0 +1,14 @@
+server:
+  port: 9700
+
+spring:
+  rabbitmq:
+    host: 192.168.0.193
+    port: 5672
+    username: guest
+    password: guest
+    template:
+      exchange: dz.exchange
+#      default-receive-queue: dz.queue
+      routing-key: dz.routing.key
+
