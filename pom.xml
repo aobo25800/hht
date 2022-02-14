@@ -12,7 +12,6 @@
         <module>zjz-xxl-job</module>
         <module>smart-test</module>
         <module>mybatis-test</module>
-        <module>zjz-demo</module>
         <module>zjz-spring-boot</module>
         <module>lettuce-test</module>
         <module>zipoutput-stream-test</module>

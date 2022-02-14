@@ -20,7 +20,8 @@ public class Hello {
     private HelloService helloService;
 
     @GetMapping("/func")
-    public String func(@RequestParam("data") String data) {
-        return helloService.func(data);
+    public String func(@RequestParam("data") String data, @RequestParam("num") Integer num) {
+        helloService.sendDelayedMsg(data, num * 1000);
+        return "ti jiao cheng gong";
     }
 }

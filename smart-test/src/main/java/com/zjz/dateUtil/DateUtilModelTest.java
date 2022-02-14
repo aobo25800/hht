@@ -14,6 +14,12 @@ public class DateUtilModelTest {
         String time = "2016年09月09日";
         Date parse = DateUtil.parse(time);
 //        String format = DateUtil.format(parse, "yyyy-MM-dd");
-        System.out.println(parse);
+//        System.out.println(parse);
+//        Date date = new Date();
+//        System.out.println(date);
+        DateTime endDate = DateUtil.offsetHour(new Date(), -24);
+        DateTime beginDate = DateUtil.offsetMinute(endDate, -10);
+        System.out.println(endDate);
+        System.out.println(beginDate);
     }
 }

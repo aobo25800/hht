@@ -1,5 +1,15 @@
 package com.zjz.streamTest;
 
+import cn.hutool.core.date.DateUtil;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 /**
  * @author com.com.zjz
  * @date 2021/9/10 14:50
@@ -7,20 +17,42 @@ package com.zjz.streamTest;
 public class Main {
 
     public static void main(String[] args) {
-        TermObj termObj = new TermObj();
-        termObj.setTerm3("1.1");
-        termObj.setTerm6("1.1");
-        termObj.setTerm12("1.1");
-        termObj.setShopId(111L);
-        termObj.setCode("com/com.zjz");
+        // 字符串排序
+        String[] strings = {"2022-08-05", "2022-09-05", "2022-10-05", "2022-03-05", "2022-04-05", "2022-05-05", "2022-06-05", "2022-07-05", "2022-11-05", "2022-12-05", "2023-01-05", "2023-02-05"};
+        List<String> collect = Arrays.stream(strings).sorted().collect(Collectors.toList());
+        System.out.println(collect);
 
-        TermObj termObj1 = new TermObj();
-        termObj1.setTerm3("1.2");
-        termObj1.setTerm6("1.2");
-        termObj1.setTerm12("1.2");
-        termObj1.setShopId(222L);
-        termObj1.setCode("idea");
+        List<LocalDate> localDates = new ArrayList<>();
+        // 时间排序
+        localDates.add(LocalDate.parse("2022-07-05"));
+        localDates.add(LocalDate.parse("2022-04-05"));
+        localDates.add(LocalDate.parse("2022-05-05"));
+        localDates.add(LocalDate.parse("2023-02-05"));
+        localDates.add(LocalDate.parse("2022-06-05"));
+        localDates.add(LocalDate.parse("2022-03-05"));
+        localDates.add(LocalDate.parse("2022-08-05"));
+        localDates.add(LocalDate.parse("2022-09-05"));
+        localDates.add(LocalDate.parse("2022-10-05"));
+        localDates.add(LocalDate.parse("2022-11-05"));
+        localDates.add(LocalDate.parse("2022-12-05"));
+        localDates.add(LocalDate.parse("2023-01-05"));
+        localDates.sort((t1, t2) -> t1.compareTo(t2));
+        System.out.println(localDates);
 
-
+        List<Date> dateList = new ArrayList<>();
+        dateList.add(DateUtil.parse("2022-04-05"));
+        dateList.add(DateUtil.parse("2022-07-05"));
+        dateList.add(DateUtil.parse("2022-05-05"));
+        dateList.add(DateUtil.parse("2022-10-05"));
+        dateList.add(DateUtil.parse("2023-01-05"));
+        dateList.add(DateUtil.parse("2022-08-05"));
+        dateList.add(DateUtil.parse("2022-06-05"));
+        dateList.add(DateUtil.parse("2022-09-05"));
+        dateList.add(DateUtil.parse("2022-11-05"));
+        dateList.add(DateUtil.parse("2022-12-05"));
+        dateList.add(DateUtil.parse("2022-03-05"));
+        dateList.add(DateUtil.parse("2023-02-05"));
+        dateList.sort((t1, t2) -> t1.compareTo(t2));
+        System.out.println(dateList);
     }
 }
