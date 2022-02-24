@@ -15,7 +15,7 @@
             <transactionManager type="JDBC"/>
             <dataSource type="POOLED">
                 <property name="driver" value="com.mysql.jdbc.Driver"/>
-                <property name="url" value="jdbc:mysql://192.168.0.193:3306/panda-platform?characterEncoding=UTF-8"/>
+                <property name="url" value="jdbc:mysql://192.168.0.193:3306/zjz?characterEncoding=UTF-8"/>
                 <property name="username" value="root"/>
                 <property name="password" value="yadb@123"/>
             </dataSource>
@@ -33,7 +33,7 @@
 
     <!-- 映射文件 -->
     <mappers>
-        <mapper resource="mybatis-config/mapper/ShopsMapper.xml"/>
+        <mapper resource="mybatis-config/mapper/UserMapper.xml"/>
     </mappers>
 
 </configuration>

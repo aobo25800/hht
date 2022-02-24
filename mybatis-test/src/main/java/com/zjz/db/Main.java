@@ -1,5 +1,6 @@
 package com.zjz.db;
 
+import com.zjz.db.model.User;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -22,7 +23,8 @@ public class Main {
         // 然后根据 sqlSessionFactory 得到 session
         SqlSession session = sqlSessionFactory.openSession();
         // 最后通过 session 的 selectList() 方法调用 sql 语句 listStudent
-        List<String> listStudent = session.selectList("selectS");
+        List<User> userList = session.selectList("selectUsers");
+        System.out.println(userList);
     }
 
 
