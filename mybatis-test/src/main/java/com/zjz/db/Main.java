@@ -1,5 +1,6 @@
 package com.zjz.db;
 
+import com.alibaba.druid.pool.DruidDataSource;
 import com.zjz.db.model.User;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
@@ -25,6 +26,7 @@ public class Main {
         // 最后通过 session 的 selectList() 方法调用 sql 语句 listStudent
         List<User> userList = session.selectList("selectUsers");
         System.out.println(userList);
+        new DruidDataSource()
     }
 
 
