@@ -1,4 +1,4 @@
-package com.zjz.mq.cnc;
+package com.zjz.mq.cnc.demo;
 
 /**
  * @author zjz

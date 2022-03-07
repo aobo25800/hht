@@ -1,6 +1,7 @@
 package com.zjz.db;
 
 import com.alibaba.druid.pool.DruidDataSource;
+import com.zjz.db.mapper.UserMapper;
 import com.zjz.db.model.User;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
@@ -23,10 +24,10 @@ public class Main {
         SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
         // 然后根据 sqlSessionFactory 得到 session
         SqlSession session = sqlSessionFactory.openSession();
-        // 最后通过 session 的 selectList() 方法调用 sql 语句 listStudent
-        List<User> userList = session.selectList("selectUsers");
-        System.out.println(userList);
-        new DruidDataSource()
+        UserMapper mapper = session.getMapper(UserMapper.class);
+        List<User> users = mapper.selectUsers();
+
+        System.out.println(users);
     }
 
 
