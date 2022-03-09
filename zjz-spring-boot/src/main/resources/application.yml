@@ -1,0 +1,4 @@
+#environment
+spring:
+  ldap:
+    base-environment:

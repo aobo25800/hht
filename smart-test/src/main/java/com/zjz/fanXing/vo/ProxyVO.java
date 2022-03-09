@@ -7,7 +7,7 @@ import lombok.Data;
  * @date 2022/1/13 16:33
  */
 @Data
-public class ProxyVO {
+public class ProxyVO extends Dz {
     private String name;
     private Integer age;
     private String sex;
