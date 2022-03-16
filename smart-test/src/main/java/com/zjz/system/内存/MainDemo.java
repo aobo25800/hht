@@ -11,7 +11,6 @@ import java.util.List;
  * @date 2021/11/22 18:08
  */
 public class MainDemo {
-        static String  base = "string";
 
         public static void main(String[] args) {
 

@@ -59,16 +59,34 @@ public class Main {
 //        Date date = new Date(1669269097000L);
 //        System.out.println(date);
 
-        LocalDate now = LocalDate.now();
-        LocalDate localDate = now.minusMonths(1);
-        System.out.println("now: " + now);
-        System.out.println("localDate: " + localDate);
+//        LocalDate now = LocalDate.now();
+//        LocalDate localDate = now.minusMonths(1);
+//        System.out.println("now: " + now);
+//        System.out.println("localDate: " + localDate);
+//
+//        System.out.println(now.format(DateTimeFormatter.ofPattern(DatePattern.NORM_MONTH_PATTERN)));
+//        System.out.println(localDate.format(DateTimeFormatter.ofPattern(DatePattern.NORM_MONTH_PATTERN)));
+//
+//        String begin = LocalDate.now()
+//                .format(DateTimeFormatter.ofPattern(DatePattern.NORM_MONTH_PATTERN));
 
-        System.out.println(now.format(DateTimeFormatter.ofPattern(DatePattern.NORM_MONTH_PATTERN)));
-        System.out.println(localDate.format(DateTimeFormatter.ofPattern(DatePattern.NORM_MONTH_PATTERN)));
+        // stream 跳出当前循环
+        List<Integer> integerList = new ArrayList<>();
 
-        String begin = LocalDate.now()
-                .format(DateTimeFormatter.ofPattern(DatePattern.NORM_MONTH_PATTERN));
+        integerList.add(5);
+        integerList.add(6);
+        integerList.add(5);
+        integerList.add(5);
+        integerList.add(5);
 
+        List<Integer> collect = integerList.stream().map(item -> {
+            if (item == 5) {
+                System.out.println("in :" + item);
+                return item;
+            }
+            System.out.println(item);
+            return 10;
+        }).collect(Collectors.toList());
+        System.out.println(collect);
     }
 }

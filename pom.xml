@@ -16,6 +16,7 @@
         <module>lettuce-test</module>
         <module>zipoutput-stream-test</module>
         <module>zjz-rabbitmq</module>
+        <module>zjz-web-file</module>
     </modules>
 
     <properties>
