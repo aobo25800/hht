@@ -1,4 +1,4 @@
-package com.zjz.localDateTest.localDate;
+package com.zjz.time.localDateTest.localDate;
 
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateTime;
@@ -26,5 +26,12 @@ public class LocalDatePackageTest {
         DateTime dateTime4 = DateUtil.offsetSecond(dateTime3, 60);
         System.out.println("延迟60秒: " + DateUtil.format(dateTime4, DatePattern.NORM_DATETIME_PATTERN));
 
+        // 月数差
+        long betweenMonth = DateUtil.betweenMonth(DateUtil.parse("2022-01-31 23:59:59"), DateUtil.parse("2022-02-01 00:00:00"), true);
+        System.out.println("相差月数: " + betweenMonth);
+
+        // 天数差
+        long betweenDay = DateUtil.betweenDay(DateUtil.parse("2022-01-31 23:59:59"), DateUtil.parse("2022-02-01 00:00:00"), false);
+        System.out.println("相差天数" + betweenDay);
     }
 }

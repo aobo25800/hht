@@ -44,6 +44,9 @@ public class SystemModelTest {
         // 一百万次 12毫秒
         System.out.println("结束时间: " + System.currentTimeMillis());
         System.out.println("count is: " + count);
+
+        // 时间转时间戳
+        System.out.println("时间转时间戳" + new Date().getTime());
     }
 }
 
