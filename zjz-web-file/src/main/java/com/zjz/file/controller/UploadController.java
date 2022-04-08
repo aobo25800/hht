@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
  * @date 2022/3/14 15:15
  */
 @RestController
-public class Upload {
+public class UploadController {
 
     @PostMapping("upload")
     @ResponseBody
