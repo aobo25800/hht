@@ -2,6 +2,7 @@ package com.zjz.zjzDemo;
 
 
 import org.apache.commons.io.FileUtils;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -11,8 +12,11 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * @author zjz
@@ -21,17 +25,29 @@ import java.util.Map;
 @RestController
 public class Uploadfile {
 
-    @PostMapping("upload12")
+    private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd");
+
+    @CrossOrigin
+    @PostMapping("upload")
     @ResponseBody
     public Map<String, Object> upload(MultipartFileParam form, @RequestParam(value = "data", required = false) MultipartFile multipartFile ) throws IOException {
         Map<String, Object> map = null;
 
         try {
+            long beginTime = System.currentTimeMillis();
             map = realUpload(form, multipartFile);
+            System.out.println("long time: " + (System.currentTimeMillis() - beginTime));
         } catch (Exception e) {
             e.printStackTrace();
         }
         return map;
+    }
+
+    @CrossOrigin
+    @PostMapping("/isUpload")
+    @ResponseBody
+    public Map<String,Object> isUpload(MultipartFileParam param){
+        return findByFileMd5(param.getMd5());
     }
 
     public Map<String, Object> realUpload(MultipartFileParam form, MultipartFile multipartFile) throws Exception {
@@ -47,6 +63,7 @@ public class Uploadfile {
 
         String saveDirectory = System.getProperty("user.dir") + File.separator + "file" + File.separator + fileId;
         String filePath = saveDirectory + File.separator + fileId + "." + suffix;
+        System.out.println("**********************\t" + saveDirectory);
         //验证路径是否存在，不存在则创建目录
         File path = new File(saveDirectory);
         if (!path.exists()) {
@@ -145,5 +162,49 @@ public class Uploadfile {
         }
 
         return map;
+    }
+
+    public Map<String, Object> findByFileMd5(String md5) {
+//        UploadFile uploadFile = uploadFileRepository.findByFileMd5(md5);
+        Map<String, Object> map = new HashMap<>();
+//        if (uploadFile == null) {
+        //没有上传过文件
+        map.put("flag", 0);
+        map.put("fileId", genUniqueKey());
+        map.put("date", simpleDateFormat.format(new Date()));
+//        }else{
+//            //上传过文件 判断文件现在还是否存在
+//            File file = new File(uploadFile.getFilePath());
+//            if (!file.exists()){
+//                //若不存在
+//                map = new HashMap<>();
+//                map.put("flag", 0);
+//                map.put("fileId", uploadFile.getFileId());
+//                map.put("date", simpleDateFormat.format(new Date()));
+//            }
+//            //若文件存在 判断此时是部分上传了 还是已全部上传
+//            else{
+//                int fileStatus = uploadFile.getFileStatus().intValue();
+//                if (fileStatus==1){
+//                    //文件只上传了一部分
+//                    map = new HashMap<>();
+//                    map.put("flag", 1);
+//                    map.put("fileId", uploadFile.getFileId());
+//                    map.put("date", simpleDateFormat.format(new Date()));
+//                }else if (fileStatus==2){
+//                    //文件早已上传完整
+//                    map = new HashMap<>();
+//                    map.put("flag" , 2);
+//                }
+//
+//            }
+//        }
+        return map;
+    }
+
+    public static synchronized String genUniqueKey() {
+        Random random = new Random();
+        Integer num = random.nextInt(900000) + 100000;
+        return System.currentTimeMillis() + String.valueOf(num);
     }
 }
