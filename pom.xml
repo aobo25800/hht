@@ -17,6 +17,7 @@
         <module>zipoutput-stream-test</module>
         <module>zjz-rabbitmq</module>
         <module>zjz-web-file</module>
+        <module>max-file</module>
     </modules>
 
     <properties>
