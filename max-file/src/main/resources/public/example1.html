@@ -2,29 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>实现方案1</title>
+    <title>demo</title>
 </head>
 <body>
-<input type="file" id="file" />
+    <input type="file" id="file" />
 
-<button id="upload">上传</button>
+    <button id="upload">上传</button>
 
-<span id="output" style="font-size:12px">等待</span>
+        <span id="output" style="font-size:12px">等待</span>
 
 
-<span id="usetime" style="font-size:12px;margin-left:20px;"></span>
+        <span id="usetime" style="font-size:12px;margin-left:20px;"></span>
 
-<span id="uuid" style="font-size:12px;margin-left:20px;"></span>
+        <span id="uuid" style="font-size:12px;margin-left:20px;"></span>
 
-<br/>
-<div>上传百分比:<span id="percentage"></span> </div>
-<br/>
-<br/>
-<br/>
-<span id="param" style="font-size:12px;margin-left:20px;">param==</span>
+    <br/>
+    <div>上传百分比:<span id="percentage"></span> </div>
+    <br/>
+    <br/>
+    <br/>
+    <span id="param" style="font-size:12px;margin-left:20px;">param==</span>
 
-<script src="http://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
-<script src="../static/js/spark-md5.js"></script>
+    <script src="http://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+    <script src="../static/js/spark-md5.js"></script>
 
 <script>
 
@@ -38,12 +38,12 @@
     const shardSize = 50 * 1024 * 1024;   //以50MB为一个分片
     var page={
         init: function () {
-          $("#upload").click(function () {
-             dataBegin=new Date();
-             var file=$("#file")[0].files[0]; //文件对象
-              $("#output").text("开始上传中。。。")
-              CheckIsUpload(file);
-          })
+            $("#upload").click(function () {
+                dataBegin=new Date();
+                var file=$("#file")[0].files[0]; //文件对象
+                $("#output").text("开始上传中。。。")
+                CheckIsUpload(file);
+            })
         }
     }
     $(function () {
@@ -63,24 +63,25 @@
         var r=new FileReader();
         r.readAsArrayBuffer(file);
         $(r).load(function (e) {
-           var blob= e.target.result;
-           var fileMd5=SparkMD5.ArrayBuffer.hash(blob);
-           form.append("md5",fileMd5);
-           console.log(fileMd5)
+            // var blob= e.target.result;
+            // var fileMd5=SparkMD5.ArrayBuffer.hash(blob);
+            form.append("md5","fileMd5");
+            console.log(fileMd5)
             //Ajax提交
             $.ajax({
-                url: "example1/isUpload",
+                url: "http://192.168.0.193:8080/isUpload",
                 type: "POST",
                 data: form,
                 async: true,
                 processData: false,//很重要，告诉jquery不要对form进行处理
                 contentType: false,  //很重要，指定为false才能形成正确的Content-Type
                 success: function (data) {
-                   handleCheckIsUploadResult(file,fileMd5,data);
+                    handleCheckIsUploadResult(file,fileMd5,data);
                 },
                 error: function(XMLHttpRequest, textStatus, errorThrown) {
+                    alert(data);
                     alert("服务器出错!");
-               }
+                }
 
             })
         })
@@ -121,7 +122,7 @@
         //分片数>分片总数 结束本次方法调用
         if (chunk> shardCount) return;
         if(!action){
-                chunk += 1;  //只有在检测分片时,i才去加1; 上传文件时无需加1
+            chunk += 1;  //只有在检测分片时,i才去加1; 上传文件时无需加1
         }
         //计算每一片的起始和结束位置
         let start=chunk*shardSize;
@@ -155,7 +156,7 @@
             form.append("partMd5", partMd5);
             //Ajax提交
             $.ajax({
-                url: "http://localhost:8080/upload",
+                url: "http://192.168.0.193:8080/upload",
                 type: "POST",
                 data:form,
                 async: true,
