@@ -1,6 +1,7 @@
 package com.zjz.streamTest;
 
 import cn.hutool.core.date.DatePattern;
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 
 import java.time.LocalDate;
@@ -8,6 +9,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -88,5 +90,11 @@ public class Main {
             return 10;
         }).collect(Collectors.toList());
         System.out.println(collect);
+
+        // 当前时间向历史时间偏移24小时
+        DateTime dateTime = DateUtil.offsetHour(new Date(), -24);
+        System.out.println("当前时间向历史时间偏移24小时" + dateTime);
+
+
     }
 }
