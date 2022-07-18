@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.zjz.db.mapper.ShopServiceContractMapper">
+
+
+    <select id="selectOne" resultType="com.zjz.db.model.ShopServiceContract">
+        select * from shop_service_contract where shop_id = #{shopId} and fund_code = #{fundCode} and uid = #{uid} LIMIT 1
+    </select>
+
+    <insert id="insertSelective" parameterType="com.zjz.db.model.ShopServiceContract">
+            insert into shop_service_contract (
+                                                `shop_id`,
+                                                `uid`,
+                                                `name`,
+                                                `sign_type`,
+                                                `fund_code`,
+                                                `fund_type`,
+                                                `del_flag`,
+                                                `sign_people`)
+            values (#{shopId}, #{uid}, #{name}, #{signType}, #{fundCode}, #{fundType}, #{delFlag}, #{signPeople})
+    </insert>
+
+</mapper>

@@ -1,8 +1,5 @@
 package com.zjz.db;
 
-import com.alibaba.druid.pool.DruidDataSource;
-import com.zjz.db.mapper.UserMapper;
-import com.zjz.db.model.User;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -17,17 +14,27 @@ import java.util.*;
  * @date 2021/11/2 19:34
  */
 public class Main {
-    public static void main(String[] args) throws IOException {
+
+    private static final SqlSession session;
+
+    static {
         // 根据 mybatis-config.xml 配置的信息得到 sqlSessionFactory
         String resource = "./mybatis-config/MybatisConfig.xml";
-        InputStream inputStream = Resources.getResourceAsStream(resource);
+        InputStream inputStream = null;
+        try {
+            inputStream = Resources.getResourceAsStream(resource);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
         // 然后根据 sqlSessionFactory 得到 session
-        SqlSession session = sqlSessionFactory.openSession();
-        UserMapper mapper = session.getMapper(UserMapper.class);
-        List<User> users = mapper.selectUsers();
+        session = sqlSessionFactory.openSession();
+    }
 
-        System.out.println(users);
+    public static void main(String[] args) throws IOException {
+        List<Long> list = new ArrayList<>();
+        list.add(131L);
+
     }
 
 
