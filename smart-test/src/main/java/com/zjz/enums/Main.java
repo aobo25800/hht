@@ -6,8 +6,17 @@ package com.zjz.enums;
  */
 public class Main {
 
-    public static void main(String[] args) {
-//        System.out.println(ReceiveAccountType.BO_HAI_LEDGER.getValue());
-//        System.out.println(ReceiveAccountType.);
+    public static void main(String[] args) throws InterruptedException {
+        /**
+         * 枚举对象是懒加载的，调用时才会加载
+         */
+        Thread.sleep(5000L);
+        String name = ReceiveAccountType.NAME.getDesc();
+        System.out.println("name is: " + name);
+
+        System.out.println(ReceiveAccountType.valueOf("NAME"));
+
+        String valueOf = ReceiveAccountType.getValueOf(2);
+        System.out.println(valueOf);
     }
 }
