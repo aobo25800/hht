@@ -1,12 +1,9 @@
 package com.zjz.zjzDemo;
 
 
+import com.zjz.request.ZjzUploadRequest;
 import org.apache.commons.io.FileUtils;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -26,6 +23,33 @@ import java.util.Random;
 public class Uploadfile {
 
     private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd");
+
+    @CrossOrigin
+    @PostMapping("zjzUpload")
+    @ResponseBody
+    public Map<String, Object> zjzUpload(@RequestBody ZjzUploadRequest request) {
+        Map<String, Object> map = null;
+
+        try {
+            doSave(request);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return map;
+    }
+
+    private void doSave(ZjzUploadRequest zjzUploadRequest) throws IOException {
+//        String saveDirectory = System.getProperty("user.dir") + File.separator + "file" + File.separator;
+        MultipartFile multipartFile = zjzUploadRequest.getData();
+        String saveDirectory = "D:" + File.separator + "zjzFile" + File.separator;
+        //验证路径是否存在，不存在则创建目录
+        File path = new File(saveDirectory);
+        if (!path.exists()) {
+            path.mkdirs();
+        }
+
+        multipartFile.transferTo(new File(saveDirectory, multipartFile.getOriginalFilename()));
+    }
 
     @CrossOrigin
     @PostMapping("upload")
@@ -125,17 +149,7 @@ public class Uploadfile {
                         tmpFile.delete();
                     }
                     outputStream.close();
-//                    //修改FileRes记录为上传成功
-//                    UploadFile uploadFile = new UploadFile();
-//                    uploadFile.setFileId(fileId);
-//                    uploadFile.setFileStatus(2);
-//                    uploadFile.setFileName(fileName);
-//                    uploadFile.setFileMd5(md5);
-//                    uploadFile.setFileSuffix(suffix);
-//                    uploadFile.setFilePath(filePath);
-//                    uploadFile.setFileSize(size);
-//
-//                    uploadFileRepository.save(uploadFile);
+
                     map=new HashMap<>();
                     map.put("fileId", fileId);
                     map.put("flag", "2");

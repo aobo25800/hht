@@ -1,3 +1,6 @@
+server:
+  port: 9700
+
 spring:
   thymeleaf:
     cache: false # 开发时关闭缓存,不然没法看到实时页面
@@ -18,3 +21,4 @@ yakir:
      dir: D:/data0/uploads/
     #1024*1024=1 048 576,5M=5 242 880
      chunkSize: 5 242 880
+
