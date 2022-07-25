@@ -4,8 +4,6 @@ import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author zjz
@@ -13,7 +11,7 @@ import java.util.List;
  */
 public class RedisApplication {
     public static void main(String[] args) {
-        RedisClient redisClient = RedisClient.create("redis://@192.168.0.193:6379/0");
+        RedisClient redisClient = RedisClient.create("redis://@192.168.0.195:6379/0");
         StatefulRedisConnection<String, String> connection = redisClient.connect();
         RedisCommands<String, String> syncCommands = connection.sync();
 

@@ -1,4 +1,4 @@
-package com.zjz.streamTest;
+package com.zjz.stream;
 
 import lombok.Data;
 

@@ -1,4 +1,4 @@
-package com.zjz;
+package com.zjz.money;
 
 import com.zjz.constant.CommonConstant;
 import com.zjz.enums.CommonEnum;
@@ -11,7 +11,7 @@ import java.math.BigDecimal;
  * @author com.com.zjz
  * @date 2021/8/19 15:52
  */
-public class bigDecimalTest {
+public class BigDecimalTest {
 
     public static void main(String[] args) {
 
@@ -24,10 +24,5 @@ public class bigDecimalTest {
         CommonService commonService = new CommonService();
         String s = commonService.commonFunc();
         System.out.println("jar package return value: " + s);
-    }
-    @Data
-    public static class Zjz {
-        private String name;
-        private String name1;
     }
 }

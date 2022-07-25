@@ -1,4 +1,4 @@
-package com.zjz.danLi;
+package com.zjz.design.danLi;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;

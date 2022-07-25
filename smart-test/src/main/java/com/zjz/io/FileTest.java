@@ -1,13 +1,7 @@
-package com.zjz.IO;
-
-import cn.hutool.core.date.DateUtil;
+package com.zjz.io;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.Date;
 
 /**
  * @author com.com.zjz
