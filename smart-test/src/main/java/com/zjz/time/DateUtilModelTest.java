@@ -27,13 +27,18 @@ public class DateUtilModelTest {
 //        System.out.println(beginDate);
 //        long between = DateUtil.betweenMonth(DateUtil.parse("2022-05-30"), DateUtil.parse("2022-06-28"), false);
 //        System.out.println("***************" + between);
-        Set<Integer> set = new HashSet<>();
-        set.add(1);
-        set.add(2);
-        set.add(3);
+//        Set<Integer> set = new HashSet<>();
+//        set.add(1);
+//        set.add(2);
+//        set.add(3);
 //        Integer[] integers = set.toArray(new Integer[0]);
 //        Stream.of(integers).forEach(System.out::println);
-        Object[] objects = set.toArray();
-        Stream.of(objects).forEach(System.out::println);
+//        Object[] objects = set.toArray();
+//        Stream.of(objects).forEach(System.out::println);
+        Date now = new Date();
+        DateTime begin = DateUtil.beginOfDay(now);
+        DateTime end = DateUtil.endOfDay(now);
+
+        System.out.println(begin + "-------------" + end);
     }
 }
