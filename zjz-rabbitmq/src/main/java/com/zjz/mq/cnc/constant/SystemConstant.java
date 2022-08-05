@@ -10,4 +10,8 @@ public interface SystemConstant {
      * 系统运行状态
      */
     int STATE_ALARM = 0;
+
+    int X_AXIS = 0;
+    int Y_AXIS = 1;
+    int Z_AXIS = 2;
 }
