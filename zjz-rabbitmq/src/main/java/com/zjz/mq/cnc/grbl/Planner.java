@@ -127,57 +127,63 @@ public class Planner {
         // will just need to follow the arc circle defined above and check if the arc radii are no longer
         // than half of either line segment to ensure no overlapping. Right now, the Arduino likely doesn't
         // have the horsepower to do these calculations at high feed rates.
-//        float vmax_junction = MINIMUM_PLANNER_SPEED; // Set default max junction speed
+        float vmax_junction = 0.0f; // Set default max junction speed
 
-//        // Skip first block or when previous_nominal_speed is used as a flag for homing and offset cycles.
-//        if ((block_buffer_head != block_buffer_tail) && (pl.previous_nominal_speed > 0.0)) {
-//            // Compute cosine of angle between previous and current path. (prev_unit_vec is negative)
-//            // NOTE: Max junction velocity is computed without sin() or acos() by trig half angle identity.
-//            float cos_theta =   - pl.previous_unit_vec[SystemConstant.X_AXIS] * unit_vec[SystemConstant.X_AXIS]
-//                                - pl.previous_unit_vec[SystemConstant.Y_AXIS] * unit_vec[SystemConstant.Y_AXIS]
-//                                - pl.previous_unit_vec[SystemConstant.Z_AXIS] * unit_vec[SystemConstant.Z_AXIS] ;
-//
-//            // Skip and use default max junction speed for 0 degree acute junction.
-//            if (cos_theta < 0.95) {
-//                vmax_junction = Math.min(pl.previous_nominal_speed,block.getNominal_speed());
-//                // Skip and avoid divide by zero for straight junctions at 180 degrees. Limit to min() of nominal speeds.
-//                if (cos_theta > -0.95) {
-//                    // Compute maximum junction velocity based on maximum acceleration and junction deviation
-//                    float sin_theta_d2 = (float) Math.sqrt(0.5*(1.0-cos_theta)); // Trig half angle identity. Always positive.
-//                    vmax_junction = Math.min(vmax_junction,
-//                            Math.sqrt(settings.acceleration * settings.junction_deviation * sin_theta_d2/(1.0-sin_theta_d2)) );
-//                }
-//            }
-//        }
-//        block.setMax_entry_speed(vmax_junction);
-//
-//        // Initialize block entry speed. Compute based on deceleration to user-defined MINIMUM_PLANNER_SPEED.
-//        float v_allowable = max_allowable_speed(-settings.acceleration,MINIMUM_PLANNER_SPEED,block->millimeters);
-//        block.setEntry_speed(Math.min(vmax_junction, v_allowable));
-//
-//        // Initialize planner efficiency flags
-//        // Set flag if block will always reach maximum junction speed regardless of entry/exit speeds.
-//        // If a block can de/ac-celerate from nominal speed to zero within the length of the block, then
-//        // the current block and next block junction speeds are guaranteed to always be at their maximum
-//        // junction speeds in deceleration and acceleration, respectively. This is due to how the current
-//        // block nominal speed limits both the current and next maximum junction speeds. Hence, in both
-//        // the reverse and forward planners, the corresponding block junction speed will always be at the
-//        // the maximum junction speed and may always be ignored for any speed reduction checks.
-//        if (block.getNominal_speed() <= v_allowable) { block.setNominal_length_flag(true); }
-//        else { block.setNominal_length_flag(false); }
-//        block.setRecalculate_flag(true);// Always calculate trapezoid for new block
-//
-//        // Update previous path unit_vector and nominal speed
+        // Skip first block or when previous_nominal_speed is used as a flag for homing and offset cycles.
+        if (plannerT.getPrevious_nominal_speed() > 0.0) {
+            // Compute cosine of angle between previous and current path. (prev_unit_vec is negative)
+            // NOTE: Max junction velocity is computed without sin() or acos() by trig half angle identity.
+            float cos_theta =   - plannerT.getPrevious_unit_vec()[SystemConstant.X_AXIS] * unit_vec[SystemConstant.X_AXIS]
+                                - plannerT.getPrevious_unit_vec()[SystemConstant.Y_AXIS] * unit_vec[SystemConstant.Y_AXIS]
+                                - plannerT.getPrevious_unit_vec()[SystemConstant.Z_AXIS] * unit_vec[SystemConstant.Z_AXIS] ;
+
+            // Skip and use default max junction speed for 0 degree acute junction.
+            if (cos_theta < 0.95) {
+                vmax_junction = Math.min(plannerT.getPrevious_nominal_speed(), block.getNominal_speed());
+                // Skip and avoid divide by zero for straight junctions at 180 degrees. Limit to min() of nominal speeds.
+                if (cos_theta > -0.95) {
+                    // Compute maximum junction velocity based on maximum acceleration and junction deviation
+                    float sin_theta_d2 = (float) Math.sqrt(0.5*(1.0-cos_theta)); // Trig half angle identity. Always positive.
+                    vmax_junction = (float) Math.min(vmax_junction,
+                            Math.sqrt((10.0*60*60) * 0.05 * sin_theta_d2/(1.0-sin_theta_d2))
+                    );
+                }
+            }
+        }
+        block.setMax_entry_speed(vmax_junction);
+
+        // Initialize block entry speed. Compute based on deceleration to user-defined MINIMUM_PLANNER_SPEED.
+        float v_allowable = max_allowable_speed(-10.0f*60*60, 0.0f, block.getMillimeters());
+        block.setEntry_speed(Math.min(vmax_junction, v_allowable));
+
+        // Initialize planner efficiency flags
+        // Set flag if block will always reach maximum junction speed regardless of entry/exit speeds.
+        // If a block can de/ac-celerate from nominal speed to zero within the length of the block, then
+        // the current block and next block junction speeds are guaranteed to always be at their maximum
+        // junction speeds in deceleration and acceleration, respectively. This is due to how the current
+        // block nominal speed limits both the current and next maximum junction speeds. Hence, in both
+        // the reverse and forward planners, the corresponding block junction speed will always be at the
+        // the maximum junction speed and may always be ignored for any speed reduction checks.
+        if (block.getNominal_speed() <= v_allowable) { block.setNominal_length_flag(true); }
+        else { block.setNominal_length_flag(false); }
+        block.setRecalculate_flag(true);// Always calculate trapezoid for new block
+
+        // Update previous path unit_vector and nominal speed
 //        memcpy(pl.previous_unit_vec, unit_vec, sizeof(unit_vec)); // pl.previous_unit_vec[] = unit_vec[]
-//        pl.previous_nominal_speed = block->nominal_speed;
-//
-//        // Update buffer head and next buffer head indices
+        plannerT.setPrevious_nominal_speed(block.getNominal_speed());
+
+        // Update buffer head and next buffer head indices
 //        block_buffer_head = next_buffer_head;
 //        next_buffer_head = next_block_index(block_buffer_head);
-//
-//        // Update planner position
+
+        // Update planner position
 //        memcpy(pl.position, target, sizeof(target)); // pl.position[] = target[]
 
 //        planner_recalculate();
+    }
+
+    public static float max_allowable_speed(float acceleration, float target_velocity, float distance)
+    {
+        return (float) Math.sqrt(target_velocity*target_velocity-2*acceleration*distance);
     }
 }
