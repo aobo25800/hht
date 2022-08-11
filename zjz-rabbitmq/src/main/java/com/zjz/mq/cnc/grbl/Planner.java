@@ -45,9 +45,9 @@ public class Planner {
 
         // Number of steps for each axis
         // labs() 绝对值
-        block.setSteps_x((int) Math.abs(target[SystemConstant.X_AXIS] - position[SystemConstant.X_AXIS]));
-        block.setSteps_y((int) Math.abs(target[SystemConstant.Y_AXIS] - position[SystemConstant.Y_AXIS]));
-        block.setSteps_z((int) Math.abs(target[SystemConstant.Z_AXIS] - position[SystemConstant.Z_AXIS]));
+        block.setSteps_x(Math.abs(target[SystemConstant.X_AXIS] - position[SystemConstant.X_AXIS]));
+        block.setSteps_y(Math.abs(target[SystemConstant.Y_AXIS] - position[SystemConstant.Y_AXIS]));
+        block.setSteps_z(Math.abs(target[SystemConstant.Z_AXIS] - position[SystemConstant.Z_AXIS]));
         block.setStep_event_count(Math.max(block.getSteps_x(), Math.max(block.getSteps_y(), block.getSteps_z())));
 
         // Bail if this is a zero-length block
@@ -67,7 +67,7 @@ public class Planner {
                         delta_mm[SystemConstant.Z_AXIS] * delta_mm[SystemConstant.Z_AXIS]
                 )
         );
-        float inverse_millimeters = (float) 1.0/block.getMillimeters();  // Inverse millimeters to remove multiple divides
+        float inverse_millimeters = 1.0f/block.getMillimeters();  // Inverse millimeters to remove multiple divides
 
         // Calculate speed in mm/minute for each axis. No divide by zero due to previous checks.
         // NOTE: Minimum stepper speed is limited by MINIMUM_STEPS_PER_MINUTE in stepper.c
@@ -92,9 +92,17 @@ public class Planner {
         // To generate trapezoids with constant acceleration between blocks the rate_delta must be computed
         // specifically for each line to compensate for this phenomenon:
         // Convert universal acceleration for direction-dependent stepper rate change parameter
+        // 计算梯形发生器的加速度。 根据线的斜率，每步事件的平均行程会发生变化。
+        // 对于沿一个轴的线，每步事件的行程等于特定轴上的行程/步。
+        // 对于 45 度线，两个轴的步进器可能会为每个步进事件步进。
+        // 然后每步行程事件为 sqrt(travel_x^2+travel_y^2)。
+        // 要在块之间生成具有恒定加速度的梯形，必须专门为每条线计算 rate_delta 以补偿这种现象：将通用加速度转换为与方向相关的步进速率变化参数
         block.setRate_delta(
-                (int) Math.ceil( block.getStep_event_count() * inverse_millimeters *
-                        (10.0*60*60) / (60 * 50 ))
+                (int) Math.ceil(
+                        block.getStep_event_count() *
+                        inverse_millimeters *
+                        (10.0 * 60 * 60) / (60 * 50)
+                )
         );  // (step/min/acceleration_tick)
 
         // Compute path unit vector
