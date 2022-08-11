@@ -2,6 +2,7 @@ package com.zjz.mq.cnc.grbl;
 
 import com.zjz.mq.cnc.obj.BlockT;
 import com.zjz.mq.cnc.constant.SystemConstant;
+import com.zjz.mq.cnc.obj.PlannerT;
 
 /**
  * @author zjz
@@ -10,18 +11,21 @@ import com.zjz.mq.cnc.constant.SystemConstant;
 public class Planner {
 
     public static void plan_buffer_line(float x, float y, float z, float feed_rate, boolean invert_feed_rate) {
-        float position[] = new float[3];
+
+        PlannerT plannerT = new PlannerT();
+
+        int[] position = plannerT.getPosition();
         // 初始坐标点
-        position[SystemConstant.X_AXIS] = 0.0f;
-        position[SystemConstant.Y_AXIS] = 0.0f;
-        position[SystemConstant.Z_AXIS] = 0.0f;
+        position[SystemConstant.X_AXIS] = 0;
+        position[SystemConstant.Y_AXIS] = 0;
+        position[SystemConstant.Z_AXIS] = 0;
 
         // Prepare to set up new block
         BlockT block = new BlockT();
 
         // Calculate target position in absolute steps
         // lround() 四舍五入
-        int target[] = new int[3];
+        int[] target = new int[3];
         target[SystemConstant.X_AXIS] = Math.round(x * 250);
         target[SystemConstant.Y_AXIS] = Math.round(y * 250);
         target[SystemConstant.Z_AXIS] = Math.round(z * 250);
@@ -29,9 +33,15 @@ public class Planner {
         // Compute direction bits for this block
         block.setDirection_bits(0);
         int direction = 0;
-        if (target[SystemConstant.X_AXIS] < position[SystemConstant.X_AXIS]) { block.setDirection_bits(direction |= (1<<5));}
-        if (target[SystemConstant.Y_AXIS] < position[SystemConstant.Y_AXIS]) { block.setDirection_bits(direction |= (1<<6));}
-        if (target[SystemConstant.Z_AXIS] < position[SystemConstant.Z_AXIS]) { block.setDirection_bits(direction |= (1<<7));}
+        if (target[SystemConstant.X_AXIS] < position[SystemConstant.X_AXIS]) {
+            block.setDirection_bits(direction |= (1<<5));
+        }
+        if (target[SystemConstant.Y_AXIS] < position[SystemConstant.Y_AXIS]) {
+            block.setDirection_bits(direction |= (1<<6));
+        }
+        if (target[SystemConstant.Z_AXIS] < position[SystemConstant.Z_AXIS]) {
+            block.setDirection_bits(direction |= (1<<7));
+        }
 
         // Number of steps for each axis
         // labs() 绝对值
@@ -44,14 +54,18 @@ public class Planner {
         if (block.getStep_event_count() == 0) { return; };
 
         // Compute path vector in terms of absolute step target and current positions
-        float delta_mm[] = new float[3];
-        delta_mm[SystemConstant.X_AXIS] = (target[SystemConstant.X_AXIS] - position[SystemConstant.X_AXIS])/250;
-        delta_mm[SystemConstant.Y_AXIS] = (target[SystemConstant.Y_AXIS] - position[SystemConstant.Y_AXIS])/250;
-        delta_mm[SystemConstant.Z_AXIS] = (target[SystemConstant.Z_AXIS] - position[SystemConstant.Z_AXIS])/250;
+        // 当前位置到下位置的增量坐标
+        float[] delta_mm = new float[3];
+        delta_mm[SystemConstant.X_AXIS] = (float) (target[SystemConstant.X_AXIS] - position[SystemConstant.X_AXIS])/250;
+        delta_mm[SystemConstant.Y_AXIS] = (float) (target[SystemConstant.Y_AXIS] - position[SystemConstant.Y_AXIS])/250;
+        delta_mm[SystemConstant.Z_AXIS] = (float) (target[SystemConstant.Z_AXIS] - position[SystemConstant.Z_AXIS])/250;
+        // 对角线长度    （长的平方 + 宽的平方 + 高的平方）开方
         block.setMillimeters(
-                (float) Math.sqrt(delta_mm[SystemConstant.X_AXIS] * delta_mm[SystemConstant.X_AXIS] +
-                        delta_mm[SystemConstant.Y_AXIS]*delta_mm[SystemConstant.Y_AXIS] +
-                        delta_mm[SystemConstant.Z_AXIS]*delta_mm[SystemConstant.Z_AXIS])
+                (float) Math.sqrt(
+                        delta_mm[SystemConstant.X_AXIS] * delta_mm[SystemConstant.X_AXIS] +
+                        delta_mm[SystemConstant.Y_AXIS] * delta_mm[SystemConstant.Y_AXIS] +
+                        delta_mm[SystemConstant.Z_AXIS] * delta_mm[SystemConstant.Z_AXIS]
+                )
         );
         float inverse_millimeters = (float) 1.0/block.getMillimeters();  // Inverse millimeters to remove multiple divides
 
@@ -84,7 +98,7 @@ public class Planner {
         );  // (step/min/acceleration_tick)
 
         // Compute path unit vector
-        float unit_vec[] = new float[3];
+        float[] unit_vec = new float[3];
 
         unit_vec[SystemConstant.X_AXIS] = delta_mm[SystemConstant.X_AXIS]*inverse_millimeters;
         unit_vec[SystemConstant.Y_AXIS] = delta_mm[SystemConstant.Y_AXIS]*inverse_millimeters;
@@ -97,7 +111,7 @@ public class Planner {
         // path of centripetal acceleration. Solve for max velocity based on max acceleration about the
         // radius of the circle, defined indirectly by junction deviation. This may be also viewed as
         // path width or max_jerk in the previous grbl version. This approach does not actually deviate
-        // from path, but used as a robust way to compute cornering speeds, as it takes into account the
+        // from path, but used as a robust way to compute cornering speeds, a s it takes into account the
         // nonlinearities of both the junction angle and junction velocity.
         // NOTE: This is basically an exact path mode (G61), but it doesn't come to a complete stop unless
         // the junction deviation value is high. In the future, if continuous mode (G64) is desired, the

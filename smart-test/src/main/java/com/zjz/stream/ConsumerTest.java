@@ -1,7 +1,11 @@
 package com.zjz.stream;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author zjz
@@ -49,18 +53,34 @@ public class ConsumerTest {
 //            System.out.println(item.age + item.getName());
 //        });
 
-        Set<Long> set = new HashSet<>();
-        set.add(1L);
-        set.add(2L);
-        set.add(3L);
-        Set<Long> set1 = new HashSet<>();
-        set1.add(1L);
-        set1.add(2L);
-        set1.add(4L);
+//        Set<Long> set = new HashSet<>();
+//        set.add(1L);
+//        set.add(2L);
+//        set.add(3L);
+//        Set<Long> set1 = new HashSet<>();
+//        set1.add(1L);
+//        set1.add(2L);
+//        set1.add(4L);
+//
+//        boolean b = set.addAll(set1);
+//        System.out.println(b);
+//        System.out.println(set);
 
-        boolean b = set.addAll(set1);
-        System.out.println(b);
-        System.out.println(set);
+
+        Person person = new Person(12, "A");
+        Person person1 = new Person(13, "B");
+        Person person2 = new Person(11, "C");
+        List<Person> list = new ArrayList<>();
+        list.add(person);
+        list.add(person1);
+        list.add(person2);
+
+        List<Person> collect = list.stream().sorted(Comparator.comparing(Person::getAge).reversed()).collect(Collectors.toList());
+        System.out.println(collect);
+
+        String bankCountInfo = "已绑卡%s张";
+
+        System.out.println(String.format(bankCountInfo, 2));
 
     }
 
