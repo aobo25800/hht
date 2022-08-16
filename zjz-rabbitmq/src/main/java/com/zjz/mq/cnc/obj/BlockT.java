@@ -19,8 +19,8 @@ public class BlockT {
     private float entry_speed;                 // Entry speed at previous-current block junction in mm/min
     private float max_entry_speed;             // Maximum allowable junction entry speed in mm/min
     private float millimeters;                 // The total travel of this block in mm
-    private boolean recalculate_flag;           // Planner flag to recalculate trapezoids on entry junction
-    private boolean nominal_length_flag;        // Planner flag for nominal speed always reached
+    private Boolean recalculate_flag;           // Planner flag to recalculate trapezoids on entry junction
+    private Boolean nominal_length_flag;        // Planner flag for nominal speed always reached
 
     // Settings for the trapezoid generator
     private int initial_rate;              // The step rate at start of block

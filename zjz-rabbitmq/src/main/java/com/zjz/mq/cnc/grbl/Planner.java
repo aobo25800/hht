@@ -4,11 +4,20 @@ import com.zjz.mq.cnc.obj.BlockT;
 import com.zjz.mq.cnc.constant.SystemConstant;
 import com.zjz.mq.cnc.obj.PlannerT;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author zjz
  * @date 2022/8/5 16:35
  */
 public class Planner {
+
+    private static BlockT[] block_buffer = {new BlockT(), new BlockT()};
+
+    private static int block_buffer_head = 0;
+    private static int block_buffer_tail = 0;
+    private static int next_buffer_head = 0;
 
     public static void plan_buffer_line(float x, float y, float z, float feed_rate, boolean invert_feed_rate) {
 
@@ -21,7 +30,7 @@ public class Planner {
         position[SystemConstant.Z_AXIS] = 0;
 
         // Prepare to set up new block
-        BlockT block = new BlockT();
+        BlockT block = block_buffer[block_buffer_head];
 
         // Calculate target position in absolute steps
         // lround() 四舍五入
@@ -85,13 +94,6 @@ public class Planner {
                 (int) Math.ceil(block.getStep_event_count() * inverse_minute)
         );
 
-        // Compute the acceleration rate for the trapezoid generator. Depending on the slope of the line
-        // average travel per step event changes. For a line along one axis the travel per step event
-        // is equal to the travel/step in the particular axis. For a 45 degree line the steppers of both
-        // axes might step for every step event. Travel per step event is then sqrt(travel_x^2+travel_y^2).
-        // To generate trapezoids with constant acceleration between blocks the rate_delta must be computed
-        // specifically for each line to compensate for this phenomenon:
-        // Convert universal acceleration for direction-dependent stepper rate change parameter
         // 计算梯形发生器的加速度。 根据线的斜率，每步事件的平均行程会发生变化。
         // 对于沿一个轴的线，每步事件的行程等于特定轴上的行程/步。
         // 对于 45 度线，两个轴的步进器可能会为每个步进事件步进。
@@ -112,21 +114,6 @@ public class Planner {
         unit_vec[SystemConstant.Y_AXIS] = delta_mm[SystemConstant.Y_AXIS]*inverse_millimeters;
         unit_vec[SystemConstant.Z_AXIS] = delta_mm[SystemConstant.Z_AXIS]*inverse_millimeters;
 
-        // Compute maximum allowable entry speed at junction by centripetal acceleration approximation.
-        // Let a circle be tangent to both previous and current path line segments, where the junction
-        // deviation is defined as the distance from the junction to the closest edge of the circle,
-        // colinear with the circle center. The circular segment joining the two paths represents the
-        // path of centripetal acceleration. Solve for max velocity based on max acceleration about the
-        // radius of the circle, defined indirectly by junction deviation. This may be also viewed as
-        // path width or max_jerk in the previous grbl version. This approach does not actually deviate
-        // from path, but used as a robust way to compute cornering speeds, a s it takes into account the
-        // nonlinearities of both the junction angle and junction velocity.
-        // NOTE: This is basically an exact path mode (G61), but it doesn't come to a complete stop unless
-        // the junction deviation value is high. In the future, if continuous mode (G64) is desired, the
-        // math here is exactly the same. Instead of motioning all the way to junction point, the machine
-        // will just need to follow the arc circle defined above and check if the arc radii are no longer
-        // than half of either line segment to ensure no overlapping. Right now, the Arduino likely doesn't
-        // have the horsepower to do these calculations at high feed rates.
         float vmax_junction = 0.0f; // Set default max junction speed
 
         // Skip first block or when previous_nominal_speed is used as a flag for homing and offset cycles.
@@ -156,14 +143,6 @@ public class Planner {
         float v_allowable = max_allowable_speed(-10.0f*60*60, 0.0f, block.getMillimeters());
         block.setEntry_speed(Math.min(vmax_junction, v_allowable));
 
-        // Initialize planner efficiency flags
-        // Set flag if block will always reach maximum junction speed regardless of entry/exit speeds.
-        // If a block can de/ac-celerate from nominal speed to zero within the length of the block, then
-        // the current block and next block junction speeds are guaranteed to always be at their maximum
-        // junction speeds in deceleration and acceleration, respectively. This is due to how the current
-        // block nominal speed limits both the current and next maximum junction speeds. Hence, in both
-        // the reverse and forward planners, the corresponding block junction speed will always be at the
-        // the maximum junction speed and may always be ignored for any speed reduction checks.
         if (block.getNominal_speed() <= v_allowable) { block.setNominal_length_flag(true); }
         else { block.setNominal_length_flag(false); }
         block.setRecalculate_flag(true);// Always calculate trapezoid for new block
@@ -173,17 +152,168 @@ public class Planner {
         plannerT.setPrevious_nominal_speed(block.getNominal_speed());
 
         // Update buffer head and next buffer head indices
-//        block_buffer_head = next_buffer_head;
-//        next_buffer_head = next_block_index(block_buffer_head);
+        block_buffer_head = next_buffer_head;
+        next_buffer_head = next_block_index(block_buffer_head);
 
         // Update planner position
 //        memcpy(pl.position, target, sizeof(target)); // pl.position[] = target[]
 
-//        planner_recalculate();
+        planner_recalculate();
     }
 
     public static float max_allowable_speed(float acceleration, float target_velocity, float distance)
     {
         return (float) Math.sqrt(target_velocity*target_velocity-2*acceleration*distance);
+    }
+
+    public static void planner_recalculate()
+    {
+        planner_reverse_pass();
+        planner_recalculate_trapezoids();
+        planner_forward_pass();
+    }
+
+    public static void planner_reverse_pass()
+    {
+        int block_index = block_buffer_head;
+        BlockT[] block = new BlockT[3];
+        while(block_index != block_buffer_tail) {
+            block_index = prev_block_index(block_index);
+            block[2]= block[1];
+            block[1]= block[0];
+            block[0] = block_buffer[block_index];
+            planner_reverse_pass_kernel(block[0], block[1], block[2]);
+        }
+        // Skip buffer tail/first block to prevent over-writing the initial entry speed.
+    }
+
+    public static int prev_block_index(int block_index)
+    {
+        if (block_index == 0) { block_index = 18; }
+        block_index--;
+        return(block_index);
+    }
+
+    public static void planner_reverse_pass_kernel(BlockT previous, BlockT current, BlockT next)
+    {
+
+        if (next != null) {
+
+            if (current.getEntry_speed() != current.getMax_entry_speed()) {
+
+                if ((!current.getNominal_length_flag()) && (current.getMax_entry_speed() > next.getEntry_speed())) {
+                    current.setEntry_speed(
+                            Math.min( current.getMax_entry_speed(),
+                                    max_allowable_speed((float) -(10.0*60*60), next.getEntry_speed(), current.getMillimeters()))
+                    );
+                } else {
+                    current.setEntry_speed(current.getMax_entry_speed());
+                }
+                current.setRecalculate_flag(true);
+
+            }
+        } // Skip last block. Already initialized and set for recalculation.
+    }
+
+    public static void planner_recalculate_trapezoids()
+    {
+        int block_index = block_buffer_tail;
+        BlockT current;
+        BlockT next = new BlockT();
+
+        while(block_index != block_buffer_head) {
+            current = next;
+            next = block_buffer[block_index];
+            if (current != null) {
+                // Recalculate if current block entry or exit junction speed has changed.
+                if (current.getRecalculate_flag() || next.getRecalculate_flag()) {
+                    // NOTE: Entry and exit factors always > 0 by all previous logic operations.
+                    calculate_trapezoid_for_block(current, current.getEntry_speed()/current.getNominal_speed(),
+                            next.getEntry_speed()/current.getNominal_speed());
+                    current.setRecalculate_flag(false); // Reset current only to ensure next trapezoid is computed
+                }
+            }
+            block_index = next_block_index( block_index );
+        }
+        // Last/newest block in buffer. Exit speed is set with MINIMUM_PLANNER_SPEED. Always recalculated.
+        calculate_trapezoid_for_block(next, next.getEntry_speed()/next.getNominal_speed(),
+                (float) (0.0/next.getNominal_speed()));
+        next.setRecalculate_flag(false);
+    }
+    public static int next_block_index(int block_index)
+    {
+        block_index++;
+        if (block_index == 18) { block_index = 0; }
+        return block_index;
+    }
+
+    public static void calculate_trapezoid_for_block(BlockT block, float entry_factor, float exit_factor)
+    {
+        block.setInitial_rate(
+                (int) Math.ceil(block.getNominal_rate() * entry_factor)
+        ); // (step/min)
+        block.setFinal_rate(
+                (int) Math.ceil(block.getNominal_rate() * exit_factor)
+        ); // (step/min)
+        int acceleration_per_minute = (int) (block.getRate_delta()*50*60.0); // (step/min^2)
+        int accelerate_steps =
+                (int) Math.ceil(estimate_acceleration_distance(block.getInitial_rate(), block.getNominal_rate(), acceleration_per_minute));
+        int decelerate_steps =
+                (int) Math.floor(estimate_acceleration_distance(block.getNominal_rate(), block.getFinal_rate(), -acceleration_per_minute));
+
+        int plateau_steps = block.getStep_event_count()-accelerate_steps-decelerate_steps;
+
+        if (plateau_steps < 0) {
+            accelerate_steps = (int) Math.ceil(
+                    intersection_distance(block.getInitial_rate(), block.getFinal_rate(), acceleration_per_minute, block.getStep_event_count()));
+            accelerate_steps = Math.max(accelerate_steps,0); // Check limits due to numerical round-off
+            accelerate_steps = Math.min(accelerate_steps,block.getStep_event_count());
+            plateau_steps = 0;
+        }
+
+        block.setAccelerate_until(accelerate_steps);
+        block.setDecelerate_after(accelerate_steps+plateau_steps);
+    }
+
+    public static float estimate_acceleration_distance(float initial_rate, float target_rate, float acceleration)
+    {
+        return( (target_rate*target_rate-initial_rate*initial_rate)/(2*acceleration) );
+    }
+
+    public static float intersection_distance(float initial_rate, float final_rate, float acceleration, float distance)
+    {
+        return( (2*acceleration*distance-initial_rate*initial_rate+final_rate*final_rate)/(4*acceleration) );
+    }
+
+    public static void planner_forward_pass()
+    {
+        int block_index = block_buffer_tail;
+        BlockT[] block = new BlockT[3];
+
+        while(block_index != block_buffer_head) {
+            block[0] = block[1];
+            block[1] = block[2];
+            block[2] = block_buffer[block_index];
+            planner_forward_pass_kernel(block[0],block[1],block[2]);
+            block_index = next_block_index( block_index );
+        }
+        planner_forward_pass_kernel(block[1], block[2], null);
+    }
+
+    public static void planner_forward_pass_kernel(BlockT previous, BlockT current, BlockT next)
+    {
+
+        if (!previous.getNominal_length_flag()) {
+            if (previous.getEntry_speed() < current.getEntry_speed()) {
+                float entry_speed = Math.min( current.getEntry_speed(),
+                        max_allowable_speed((float) -(10.0*60*60),previous.getEntry_speed(),previous.getMillimeters()) );
+
+                // Check for junction speed change
+                if (current.getEntry_speed() != entry_speed) {
+                    current.setEntry_speed(entry_speed);
+                    current.setRecalculate_flag(true);
+                }
+            }
+        }
     }
 }
