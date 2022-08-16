@@ -26,7 +26,7 @@ public class BigDecimalTest {
 //        String s = commonService.commonFunc();
 //        System.out.println("jar package return value: " + s);
 
-        BigDecimal a = new BigDecimal("110");
+        BigDecimal a = new BigDecimal("110.000");
         BigDecimal b = new BigDecimal("100.76");
         /**
          * 金额相加
