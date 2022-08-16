@@ -9,9 +9,12 @@ import com.zjz.mq.cnc.grbl.Planner;
 public class CNCApplication {
 
     public static void main(String[] args) {
+        Planner.plan_init();
 
         Planner.plan_buffer_line(15, 18, 0, 300, false);
         Planner.plan_buffer_line(20, 15, 0, 300, false);
+        Planner.plan_buffer_line(20, -15, 0, 300, false);
+        Planner.plan_buffer_line(-20, -15, 0, 300, false);
 
     }
 }

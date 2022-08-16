@@ -4,8 +4,6 @@ import com.zjz.mq.cnc.obj.BlockT;
 import com.zjz.mq.cnc.constant.SystemConstant;
 import com.zjz.mq.cnc.obj.PlannerT;
 
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author zjz
@@ -13,24 +11,25 @@ import java.util.List;
  */
 public class Planner {
 
-    private static BlockT[] block_buffer = {new BlockT(), new BlockT()};
+    private static final PlannerT plannerT = new PlannerT();
+    private static final BlockT[] block_buffer = new BlockT[18];
 
     private static int block_buffer_head = 0;
     private static int block_buffer_tail = 0;
     private static int next_buffer_head = 0;
 
+    public static void plan_init()
+    {
+        block_buffer_tail = block_buffer_head;
+        next_buffer_head = next_block_index(block_buffer_head);
+    }
+
     public static void plan_buffer_line(float x, float y, float z, float feed_rate, boolean invert_feed_rate) {
 
-        PlannerT plannerT = new PlannerT();
-
         int[] position = plannerT.getPosition();
-        // 初始坐标点
-        position[SystemConstant.X_AXIS] = 0;
-        position[SystemConstant.Y_AXIS] = 0;
-        position[SystemConstant.Z_AXIS] = 0;
 
         // Prepare to set up new block
-        BlockT block = block_buffer[block_buffer_head];
+        BlockT block = new BlockT();
 
         // Calculate target position in absolute steps
         // lround() 四舍五入
@@ -147,8 +146,10 @@ public class Planner {
         else { block.setNominal_length_flag(false); }
         block.setRecalculate_flag(true);// Always calculate trapezoid for new block
 
+        block_buffer[block_buffer_head] = block;
         // Update previous path unit_vector and nominal speed
 //        memcpy(pl.previous_unit_vec, unit_vec, sizeof(unit_vec)); // pl.previous_unit_vec[] = unit_vec[]
+        plannerT.setPrevious_unit_vec(unit_vec);
         plannerT.setPrevious_nominal_speed(block.getNominal_speed());
 
         // Update buffer head and next buffer head indices
@@ -157,8 +158,10 @@ public class Planner {
 
         // Update planner position
 //        memcpy(pl.position, target, sizeof(target)); // pl.position[] = target[]
+        plannerT.setPosition(target);
 
         planner_recalculate();
+//        block_buffer_tail ++ ;
     }
 
     public static float max_allowable_speed(float acceleration, float target_velocity, float distance)
@@ -197,6 +200,10 @@ public class Planner {
     public static void planner_reverse_pass_kernel(BlockT previous, BlockT current, BlockT next)
     {
 
+        if (current == null) {
+            return;
+        }  // Cannot operate on nothing.
+
         if (next != null) {
 
             if (current.getEntry_speed() != current.getMax_entry_speed()) {
@@ -219,7 +226,7 @@ public class Planner {
     {
         int block_index = block_buffer_tail;
         BlockT current;
-        BlockT next = new BlockT();
+        BlockT next = null;
 
         while(block_index != block_buffer_head) {
             current = next;
@@ -233,7 +240,7 @@ public class Planner {
                     current.setRecalculate_flag(false); // Reset current only to ensure next trapezoid is computed
                 }
             }
-            block_index = next_block_index( block_index );
+            block_index = next_block_index(block_index);
         }
         // Last/newest block in buffer. Exit speed is set with MINIMUM_PLANNER_SPEED. Always recalculated.
         calculate_trapezoid_for_block(next, next.getEntry_speed()/next.getNominal_speed(),
@@ -261,7 +268,7 @@ public class Planner {
         int decelerate_steps =
                 (int) Math.floor(estimate_acceleration_distance(block.getNominal_rate(), block.getFinal_rate(), -acceleration_per_minute));
 
-        int plateau_steps = block.getStep_event_count()-accelerate_steps-decelerate_steps;
+        int plateau_steps = block.getStep_event_count() - accelerate_steps - decelerate_steps;
 
         if (plateau_steps < 0) {
             accelerate_steps = (int) Math.ceil(
@@ -303,6 +310,10 @@ public class Planner {
     public static void planner_forward_pass_kernel(BlockT previous, BlockT current, BlockT next)
     {
 
+        if(previous == null) {
+            return;
+        }  // Begin planning after buffer_tail
+
         if (!previous.getNominal_length_flag()) {
             if (previous.getEntry_speed() < current.getEntry_speed()) {
                 float entry_speed = Math.min( current.getEntry_speed(),
@@ -315,5 +326,9 @@ public class Planner {
                 }
             }
         }
+    }
+
+    public static void setBlock_buffer_tail(int block_buffer_tail) {
+        Planner.block_buffer_tail = block_buffer_tail;
     }
 }
