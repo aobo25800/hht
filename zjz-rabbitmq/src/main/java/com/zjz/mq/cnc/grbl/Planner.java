@@ -31,12 +31,12 @@ public class Planner {
         // Prepare to set up new block
         BlockT block = new BlockT();
 
-        // Calculate target position in absolute steps
+        // Calculate target position in absolute steps DEFAULT_X_STEPS_PER_MM
         // lround() 四舍五入
         int[] target = new int[3];
-        target[SystemConstant.X_AXIS] = Math.round(x * 250);
-        target[SystemConstant.Y_AXIS] = Math.round(y * 250);
-        target[SystemConstant.Z_AXIS] = Math.round(z * 250);
+        target[SystemConstant.X_AXIS] = Math.round(x * SystemConstant.DEFAULT_X_STEPS_PER_MM);  // DEFAULT_X_STEPS_PER_MM 可配置参数 默认每毫米对应的步数
+        target[SystemConstant.Y_AXIS] = Math.round(y * SystemConstant.DEFAULT_X_STEPS_PER_MM);  // DEFAULT_X_STEPS_PER_MM 可配置参数 默认每毫米对应的步数
+        target[SystemConstant.Z_AXIS] = Math.round(z * SystemConstant.DEFAULT_X_STEPS_PER_MM);  // DEFAULT_X_STEPS_PER_MM 可配置参数 默认每毫米对应的步数
 
         // Compute direction bits for this block
         block.setDirection_bits(0);
@@ -51,18 +51,19 @@ public class Planner {
             block.setDirection_bits(direction |= (1<<7));
         }
 
-        // Number of steps for each axis
+        // 每个轴增量步数
         // labs() 绝对值
         block.setSteps_x(Math.abs(target[SystemConstant.X_AXIS] - position[SystemConstant.X_AXIS]));
         block.setSteps_y(Math.abs(target[SystemConstant.Y_AXIS] - position[SystemConstant.Y_AXIS]));
         block.setSteps_z(Math.abs(target[SystemConstant.Z_AXIS] - position[SystemConstant.Z_AXIS]));
+        // 记录当前线段最大步数
         block.setStep_event_count(Math.max(block.getSteps_x(), Math.max(block.getSteps_y(), block.getSteps_z())));
 
         // Bail if this is a zero-length block
         if (block.getStep_event_count() == 0) { return; };
 
         // Compute path vector in terms of absolute step target and current positions
-        // 当前位置到下位置的增量坐标
+        // 当前位置到下位置的增量长度
         float[] delta_mm = new float[3];
         delta_mm[SystemConstant.X_AXIS] = (float) (target[SystemConstant.X_AXIS] - position[SystemConstant.X_AXIS])/250;
         delta_mm[SystemConstant.Y_AXIS] = (float) (target[SystemConstant.Y_AXIS] - position[SystemConstant.Y_AXIS])/250;
@@ -75,6 +76,7 @@ public class Planner {
                         delta_mm[SystemConstant.Z_AXIS] * delta_mm[SystemConstant.Z_AXIS]
                 )
         );
+        //
         float inverse_millimeters = 1.0f/block.getMillimeters();  // Inverse millimeters to remove multiple divides
 
         // Calculate speed in mm/minute for each axis. No divide by zero due to previous checks.
@@ -108,10 +110,9 @@ public class Planner {
 
         // Compute path unit vector
         float[] unit_vec = new float[3];
-
-        unit_vec[SystemConstant.X_AXIS] = delta_mm[SystemConstant.X_AXIS]*inverse_millimeters;
-        unit_vec[SystemConstant.Y_AXIS] = delta_mm[SystemConstant.Y_AXIS]*inverse_millimeters;
-        unit_vec[SystemConstant.Z_AXIS] = delta_mm[SystemConstant.Z_AXIS]*inverse_millimeters;
+        unit_vec[SystemConstant.X_AXIS] = delta_mm[SystemConstant.X_AXIS] * inverse_millimeters;
+        unit_vec[SystemConstant.Y_AXIS] = delta_mm[SystemConstant.Y_AXIS] * inverse_millimeters;
+        unit_vec[SystemConstant.Z_AXIS] = delta_mm[SystemConstant.Z_AXIS] * inverse_millimeters;
 
         float vmax_junction = 0.0f; // Set default max junction speed
 
@@ -235,7 +236,8 @@ public class Planner {
                 // Recalculate if current block entry or exit junction speed has changed.
                 if (current.getRecalculate_flag() || next.getRecalculate_flag()) {
                     // NOTE: Entry and exit factors always > 0 by all previous logic operations.
-                    calculate_trapezoid_for_block(current, current.getEntry_speed()/current.getNominal_speed(),
+                    calculate_trapezoid_for_block(current,
+                            current.getEntry_speed()/current.getNominal_speed(),
                             next.getEntry_speed()/current.getNominal_speed());
                     current.setRecalculate_flag(false); // Reset current only to ensure next trapezoid is computed
                 }
@@ -284,7 +286,7 @@ public class Planner {
 
     public static float estimate_acceleration_distance(float initial_rate, float target_rate, float acceleration)
     {
-        return( (target_rate*target_rate-initial_rate*initial_rate)/(2*acceleration) );
+        return (target_rate * target_rate - initial_rate * initial_rate)/(2 * acceleration);
     }
 
     public static float intersection_distance(float initial_rate, float final_rate, float acceleration, float distance)

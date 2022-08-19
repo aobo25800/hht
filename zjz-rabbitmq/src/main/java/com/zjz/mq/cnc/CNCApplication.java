@@ -15,6 +15,9 @@ public class CNCApplication {
         Planner.plan_buffer_line(20, 15, 0, 300, false);
         Planner.plan_buffer_line(20, -15, 0, 300, false);
         Planner.plan_buffer_line(-20, -15, 0, 300, false);
+        Planner.plan_buffer_line(-20, 15, 0, 300, false);
+        Planner.plan_buffer_line(20, -15, 0, 300, false);
+        Planner.plan_buffer_line(-20, -15, 0, 300, false);
 
     }
 }
