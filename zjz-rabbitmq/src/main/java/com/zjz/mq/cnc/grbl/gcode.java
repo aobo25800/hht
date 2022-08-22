@@ -6,15 +6,15 @@ package com.zjz.mq.cnc.grbl;
  */
 public class gcode {
 
-    public static boolean readFloat(char line[], int counter, float float_ptr) {
+    public static boolean readFloat(String line, int counter, float float_ptr) {
 //        char ptr = counter;
-        char c = line[counter];
+        byte[] bytes = line.getBytes();
+        char c = (char) bytes[counter];
         boolean isnegative;
         int intval = 0;
         int exp = 0;
         int ndigit = 0;
         boolean isdecimal = false;
-        float fval;
 
         // Grab first character and increment pointer. No spaces assumed in line.
 //        c = ptr++;
@@ -23,39 +23,41 @@ public class gcode {
         isnegative = false;
         if (c == '-') {
             isnegative = true;
-//            c = ptr++;
+            counter ++;
+            c = (char) bytes[counter];
         } else if (c == '+') {
-//            c = ptr++;
+            counter ++;
+            c = (char) bytes[counter];
         }
 
         // Extract number into fast integer. Track decimal in terms of exponent value.
-        intval = 0;
-        exp = 0;
-        ndigit = 0;
-        isdecimal = false;
         while(true) {
-            c -= '0';
-            if (c <= 9) {
+            int i = (c - '0') & 0xff;
+            if (i <= 9) {
                 ndigit++;
                 if (ndigit <= 8) {
                     if (isdecimal) { exp--; }
-                    intval = (((intval << 2) + intval) << 1) + c; // intval*10 + c
+                    intval = (((intval << 2) + intval) << 1) + i; // intval*10 + c
                 } else {
                     if (!(isdecimal)) { exp++; }  // Drop overflow digits
                 }
-            } else if (c == (('.'-'0') & 0xff)  &&  !(isdecimal)) {
+            } else if (i == (('.'-'0') & 0xff)  &&  !(isdecimal)) {
                 isdecimal = true;
             } else {
                 break;
             }
-//            c = ptr++;
+            counter ++;
+            if (counter >= bytes.length) {
+                break;
+            }
+            c = (char) bytes[counter];
         }
 
         // Return if no digits have been read.
 //        if (!ndigit) { return(false); };
 
         // Convert integer into floating point.
-
+        float fval;
         fval = (float)intval;
 
         // Apply decimal. Should perform no more than two floating point multiplications for the
@@ -85,6 +87,11 @@ public class gcode {
 //        counter = (char) (ptr - 1); // Set char_counter to next statement
 
         return true;
+    }
+
+    public static void main(String[] args) {
+        String str = "-5193.0011";
+        readFloat(str, 0, 0);
     }
 
 
