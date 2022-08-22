@@ -30,4 +30,25 @@ public class BlockT {
     private int decelerate_after;          // 开始减速的阶跃事件的索引
     private int nominal_rate;              // 此块的名义步进速率，单位为 step_events/分钟
 
+    @Override
+    public String toString() {
+        return
+                "direction_bits=" + this.direction_bits + "" + ", " +
+                "steps_x=" + this.steps_x + "" + ", " +
+                "steps_y=" + this.steps_y + "" + ", " +
+                "steps_z=" + this.steps_z + "" + ", " +
+                "step_event_count=" + this.step_event_count + "" + ", " +
+                "nominal_speed=" + this.nominal_speed + "" + ", " +
+                "entry_speed=" + this.entry_speed + "" + ", " +
+                "max_entry_speed=" + this.max_entry_speed + "" + ", " +
+                "millimeters=" + this.millimeters + "" + ", " +
+                "recalculate_flag=" + this.recalculate_flag + "" + ", " +
+                "nominal_length_flag=" + this.nominal_length_flag + "" + ", " +
+                "initial_rate=" + this.initial_rate + "" + ", " +
+                "final_rate=" + this.final_rate + "" + ", " +
+                "rate_delta=" + this.rate_delta + "" + ", " +
+                "accelerate_until=" + this.accelerate_until + "" + ", " +
+                "decelerate_after=" + this.decelerate_after + "" + ", " +
+                "nominal_rate=" + this.nominal_rate;
+    }
 }

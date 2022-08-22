@@ -18,6 +18,8 @@ public class Planner {
     private static int block_buffer_tail = 0;
     private static int next_buffer_head = 0;
 
+    public static char[] chars = "0123456789ABCDEF".toCharArray();
+
     public static void plan_init()
     {
         block_buffer_tail = block_buffer_head;
@@ -163,6 +165,9 @@ public class Planner {
 
         planner_recalculate();
 //        block_buffer_tail ++ ;
+
+        String s = strToHex(block.toString());
+        System.out.println(s);
     }
 
     public static float max_allowable_speed(float acceleration, float target_velocity, float distance)
@@ -332,5 +337,25 @@ public class Planner {
 
     public static void setBlock_buffer_tail(int block_buffer_tail) {
         Planner.block_buffer_tail = block_buffer_tail;
+    }
+
+    public static String strToHex(String str) {
+        StringBuilder builder = new StringBuilder("");
+        byte[] bs = str.getBytes();
+        int bit;
+        for (int i = 0; i < bs.length; i++) {
+            bit = (bs[i] & 0xf0) >> 4;
+            builder.append(chars[bit]);
+            bit = bs[i] & 0x0f;
+            builder.append(chars[bit]);
+            builder.append(" ");
+        }
+        return builder.toString().trim();
+    }
+
+    public static void main(String[] args) {
+        String a = strToHex("direction_bits=64, steps_x=1250, steps_y=750, steps_z=0, step_event_count=1250, nominal_speed=300.012345");
+
+        System.out.println(a);
     }
 }
