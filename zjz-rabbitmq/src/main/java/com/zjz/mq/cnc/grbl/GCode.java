@@ -50,8 +50,7 @@ public class GCode {
         float fVal;
         fVal = (float) intVal;
 
-        // Apply decimal. Should perform no more than two floating point multiplications for the
-        // expected range of E0 to E-4.
+        // Apply decimal. Should perform no more than two floating point multiplications for the expected range of E0 to E-4.
         if (fVal != 0) {
             while (exp <= -2) {
                 fVal *= 0.01;

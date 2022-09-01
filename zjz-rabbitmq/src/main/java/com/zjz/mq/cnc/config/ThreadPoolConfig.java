@@ -11,6 +11,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @date 2022/7/29 16:54
  */
 public class ThreadPoolConfig {
+
+
     public static ThreadPoolExecutor commonThreadPool() {
         return new ThreadPoolExecutor(
                 10,
@@ -24,7 +26,6 @@ public class ThreadPoolConfig {
                     @Override
                     public Thread newThread(Runnable r) {
                         Thread t = new Thread(r);
-                        System.out.println(t.getId());
                         t.setName("CommonPool-" + threadNumber.getAndIncrement());
                         t.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
                             @Override

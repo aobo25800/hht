@@ -22,4 +22,16 @@ public interface SystemConstant {
      * 默认每毫米对应的步数
      */
     int DEFAULT_X_STEPS_PER_MM = 250;
+
+    int X_STEP_BIT = 2;  // Uno Digital Pin 2
+    int Y_STEP_BIT = 3;  // Uno Digital Pin 3
+    int Z_STEP_BIT = 4;  // Uno Digital Pin 4
+    int X_DIRECTION_BIT = 5;  // Uno Digital Pin 5
+    int Y_DIRECTION_BIT = 6;  // Uno Digital Pin 6
+    int Z_DIRECTION_BIT = 7;  // Uno Digital Pin 7
+
+    /**
+     * 进给保持标志
+     */
+    int STATE_HOLD = 4;
 }

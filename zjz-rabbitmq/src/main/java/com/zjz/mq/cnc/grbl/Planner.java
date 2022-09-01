@@ -12,21 +12,21 @@ import com.zjz.mq.cnc.obj.PlannerT;
 public class Planner {
 
     private static final PlannerT plannerT = new PlannerT();
-    private static final BlockT[] block_buffer = new BlockT[18];
+    private static final BlockT[] blockBuffer = new BlockT[18];
 
-    private static int block_buffer_head = 0;
-    private static int block_buffer_tail = 0;
-    private static int next_buffer_head = 0;
+    private static int blockBufferHead = 0;
+    private static int blockBufferTail = 0;
+    private static int nextBufferHead = 0;
 
     public static char[] chars = "0123456789ABCDEF".toCharArray();
 
-    public static void plan_init()
+    public static void planInit()
     {
-        block_buffer_tail = block_buffer_head;
-        next_buffer_head = next_block_index(block_buffer_head);
+        blockBufferTail = blockBufferHead;
+        nextBufferHead = nextBlockIndex(blockBufferHead);
     }
 
-    public static void plan_buffer_line(float x, float y, float z, float feed_rate, boolean invert_feed_rate) {
+    public static void planBufferLine(float x, float y, float z, float feedRate, boolean invertFeedRate) {
 
         int[] position = plannerT.getPosition();
 
@@ -34,67 +34,65 @@ public class Planner {
         BlockT block = new BlockT();
 
         // Calculate target position in absolute steps DEFAULT_X_STEPS_PER_MM
-        // lround() 四舍五入
+        // l round() 四舍五入
         int[] target = new int[3];
         target[SystemConstant.X_AXIS] = Math.round(x * SystemConstant.DEFAULT_X_STEPS_PER_MM);  // DEFAULT_X_STEPS_PER_MM 可配置参数 默认每毫米对应的步数
         target[SystemConstant.Y_AXIS] = Math.round(y * SystemConstant.DEFAULT_X_STEPS_PER_MM);  // DEFAULT_X_STEPS_PER_MM 可配置参数 默认每毫米对应的步数
         target[SystemConstant.Z_AXIS] = Math.round(z * SystemConstant.DEFAULT_X_STEPS_PER_MM);  // DEFAULT_X_STEPS_PER_MM 可配置参数 默认每毫米对应的步数
 
         // Compute direction bits for this block
-        block.setDirection_bits(0);
+        block.setDirectionBits(0);
         int direction = 0;
         if (target[SystemConstant.X_AXIS] < position[SystemConstant.X_AXIS]) {
-            block.setDirection_bits(direction |= (1<<5));
+            block.setDirectionBits(direction |= (1 << 5));
         }
         if (target[SystemConstant.Y_AXIS] < position[SystemConstant.Y_AXIS]) {
-            block.setDirection_bits(direction |= (1<<6));
+            block.setDirectionBits(direction |= (1 << 6));
         }
         if (target[SystemConstant.Z_AXIS] < position[SystemConstant.Z_AXIS]) {
-            block.setDirection_bits(direction |= (1<<7));
+            block.setDirectionBits(direction |= (1 << 7));
         }
 
         // 每个轴增量步数
         // labs() 绝对值
-        block.setSteps_x(Math.abs(target[SystemConstant.X_AXIS] - position[SystemConstant.X_AXIS]));
-        block.setSteps_y(Math.abs(target[SystemConstant.Y_AXIS] - position[SystemConstant.Y_AXIS]));
-        block.setSteps_z(Math.abs(target[SystemConstant.Z_AXIS] - position[SystemConstant.Z_AXIS]));
+        block.setStepsX(Math.abs(target[SystemConstant.X_AXIS] - position[SystemConstant.X_AXIS]));
+        block.setStepsY(Math.abs(target[SystemConstant.Y_AXIS] - position[SystemConstant.Y_AXIS]));
+        block.setStepsZ(Math.abs(target[SystemConstant.Z_AXIS] - position[SystemConstant.Z_AXIS]));
         // 记录当前线段最大步数
-        block.setStep_event_count(Math.max(block.getSteps_x(), Math.max(block.getSteps_y(), block.getSteps_z())));
+        block.setStepEventCount(Math.max(block.getStepsX(), Math.max(block.getStepsY(), block.getStepsZ())));
 
         // Bail if this is a zero-length block
-        if (block.getStep_event_count() == 0) { return; };
+        if (block.getStepEventCount() == 0) { return; }
 
         // Compute path vector in terms of absolute step target and current positions
         // 当前位置到下位置的增量长度
-        float[] delta_mm = new float[3];
-        delta_mm[SystemConstant.X_AXIS] = (float) (target[SystemConstant.X_AXIS] - position[SystemConstant.X_AXIS])/250;
-        delta_mm[SystemConstant.Y_AXIS] = (float) (target[SystemConstant.Y_AXIS] - position[SystemConstant.Y_AXIS])/250;
-        delta_mm[SystemConstant.Z_AXIS] = (float) (target[SystemConstant.Z_AXIS] - position[SystemConstant.Z_AXIS])/250;
+        float[] deltaMm = new float[3];
+        deltaMm[SystemConstant.X_AXIS] = (float) (target[SystemConstant.X_AXIS] - position[SystemConstant.X_AXIS])/250;
+        deltaMm[SystemConstant.Y_AXIS] = (float) (target[SystemConstant.Y_AXIS] - position[SystemConstant.Y_AXIS])/250;
+        deltaMm[SystemConstant.Z_AXIS] = (float) (target[SystemConstant.Z_AXIS] - position[SystemConstant.Z_AXIS])/250;
         // 对角线长度    （长的平方 + 宽的平方 + 高的平方）开方
         block.setMillimeters(
                 (float) Math.sqrt(
-                        delta_mm[SystemConstant.X_AXIS] * delta_mm[SystemConstant.X_AXIS] +
-                        delta_mm[SystemConstant.Y_AXIS] * delta_mm[SystemConstant.Y_AXIS] +
-                        delta_mm[SystemConstant.Z_AXIS] * delta_mm[SystemConstant.Z_AXIS]
-                )
-        );
+                        deltaMm[SystemConstant.X_AXIS] * deltaMm[SystemConstant.X_AXIS] +
+                        deltaMm[SystemConstant.Y_AXIS] * deltaMm[SystemConstant.Y_AXIS] +
+                        deltaMm[SystemConstant.Z_AXIS] * deltaMm[SystemConstant.Z_AXIS]));
         //
-        float inverse_millimeters = 1.0f/block.getMillimeters();  // Inverse millimeters to remove multiple divides
+        float inverseMillimeters = 1.0f/block.getMillimeters();  // Inverse millimeters to remove multiple divides
 
         // Calculate speed in mm/minute for each axis. No divide by zero due to previous checks.
         // NOTE: Minimum stepper speed is limited by MINIMUM_STEPS_PER_MINUTE in stepper.c
-        float inverse_minute;
-        if (!invert_feed_rate) {
-            inverse_minute = feed_rate * inverse_millimeters;
+        float inverseMinute;
+        if (!invertFeedRate) {
+            inverseMinute = feedRate * inverseMillimeters;
         } else {
-            inverse_minute = (float) 1.0 / feed_rate;
+            inverseMinute = (float) 1.0 / feedRate;
         }
-        block.setNominal_speed(
-                block.getMillimeters() * inverse_minute
+        block.setNominalSpeed(
+                block.getMillimeters() * inverseMinute
         );
         // ceil() 向上取整
-        block.setNominal_rate(
-                (int) Math.ceil(block.getStep_event_count() * inverse_minute)
+        block.setNominalRate(
+                (int) Math.ceil(block.getStepEventCount() * inverseMinute)
         );
 
         // 计算梯形发生器的加速度。 根据线的斜率，每步事件的平均行程会发生变化。
@@ -102,108 +100,104 @@ public class Planner {
         // 对于 45 度线，两个轴的步进器可能会为每个步进事件步进。
         // 然后每步行程事件为 sqrt(travel_x^2+travel_y^2)。
         // 要在块之间生成具有恒定加速度的梯形，必须专门为每条线计算 rate_delta 以补偿这种现象：将通用加速度转换为与方向相关的步进速率变化参数
-        block.setRate_delta(
+        block.setRateDelta(
                 (int) Math.ceil(
-                        block.getStep_event_count() *
-                        inverse_millimeters *
+                        block.getStepEventCount() *
+                        inverseMillimeters *
                         (10.0 * 60 * 60) / (60 * 50)
                 )
         );  // (step/min/acceleration_tick)
 
         // Compute path unit vector
-        float[] unit_vec = new float[3];
-        unit_vec[SystemConstant.X_AXIS] = delta_mm[SystemConstant.X_AXIS] * inverse_millimeters;
-        unit_vec[SystemConstant.Y_AXIS] = delta_mm[SystemConstant.Y_AXIS] * inverse_millimeters;
-        unit_vec[SystemConstant.Z_AXIS] = delta_mm[SystemConstant.Z_AXIS] * inverse_millimeters;
+        float[] unitVec = new float[3];
+        unitVec[SystemConstant.X_AXIS] = deltaMm[SystemConstant.X_AXIS] * inverseMillimeters;
+        unitVec[SystemConstant.Y_AXIS] = deltaMm[SystemConstant.Y_AXIS] * inverseMillimeters;
+        unitVec[SystemConstant.Z_AXIS] = deltaMm[SystemConstant.Z_AXIS] * inverseMillimeters;
 
-        float vmax_junction = 0.0f; // Set default max junction speed
+        float maxJunction = 0.0f; // Set default max junction speed
 
         // Skip first block or when previous_nominal_speed is used as a flag for homing and offset cycles.
-        if (plannerT.getPrevious_nominal_speed() > 0.0) {
-            // Compute cosine of angle between previous and current path. (prev_unit_vec is negative)
+        if (plannerT.getPreviousNominalSpeed() > 0.0) {
+            // Compute cosine of angle between previous and current path. (prev_unitVec is negative)
             // NOTE: Max junction velocity is computed without sin() or acos() by trig half angle identity.
-            float cos_theta =   - plannerT.getPrevious_unit_vec()[SystemConstant.X_AXIS] * unit_vec[SystemConstant.X_AXIS]
-                                - plannerT.getPrevious_unit_vec()[SystemConstant.Y_AXIS] * unit_vec[SystemConstant.Y_AXIS]
-                                - plannerT.getPrevious_unit_vec()[SystemConstant.Z_AXIS] * unit_vec[SystemConstant.Z_AXIS] ;
+            float cosTheta =   - plannerT.getPreviousUnitVec()[SystemConstant.X_AXIS] * unitVec[SystemConstant.X_AXIS]
+                                - plannerT.getPreviousUnitVec()[SystemConstant.Y_AXIS] * unitVec[SystemConstant.Y_AXIS]
+                                - plannerT.getPreviousUnitVec()[SystemConstant.Z_AXIS] * unitVec[SystemConstant.Z_AXIS] ;
 
             // Skip and use default max junction speed for 0 degree acute junction.
-            if (cos_theta < 0.95) {
-                vmax_junction = Math.min(plannerT.getPrevious_nominal_speed(), block.getNominal_speed());
+            if (cosTheta < 0.95) {
+                maxJunction = Math.min(plannerT.getPreviousNominalSpeed(), block.getNominalSpeed());
                 // Skip and avoid divide by zero for straight junctions at 180 degrees. Limit to min() of nominal speeds.
-                if (cos_theta > -0.95) {
+                if (cosTheta > -0.95) {
                     // Compute maximum junction velocity based on maximum acceleration and junction deviation
-                    float sin_theta_d2 = (float) Math.sqrt(0.5*(1.0-cos_theta)); // Trig half angle identity. Always positive.
-                    vmax_junction = (float) Math.min(vmax_junction,
-                            Math.sqrt((10.0*60*60) * 0.05 * sin_theta_d2/(1.0-sin_theta_d2))
+                    float sinThetaD2 = (float) Math.sqrt(0.5*(1.0-cosTheta)); // Trig half angle identity. Always positive.
+                    maxJunction = (float) Math.min(maxJunction,
+                            Math.sqrt((10.0*60*60) * 0.05 * sinThetaD2/(1.0-sinThetaD2))
                     );
                 }
             }
         }
-        block.setMax_entry_speed(vmax_junction);
+        block.setMaxEntrySpeed(maxJunction);
 
         // Initialize block entry speed. Compute based on deceleration to user-defined MINIMUM_PLANNER_SPEED.
-        float v_allowable = max_allowable_speed(-10.0f*60*60, 0.0f, block.getMillimeters());
-        block.setEntry_speed(Math.min(vmax_junction, v_allowable));
+        float vAllowable = maxAllowableSpeed(-10.0f*60*60, 0.0f, block.getMillimeters());
+        block.setEntrySpeed(Math.min(maxJunction, vAllowable));
 
-        if (block.getNominal_speed() <= v_allowable) { block.setNominal_length_flag(true); }
-        else { block.setNominal_length_flag(false); }
-        block.setRecalculate_flag(true);// Always calculate trapezoid for new block
+        block.setNominalLengthFlag(block.getNominalSpeed() <= vAllowable);
+        block.setRecalculateFlag(true);// Always calculate trapezoid for new block
 
-        block_buffer[block_buffer_head] = block;
-        // Update previous path unit_vector and nominal speed
-//        memcpy(pl.previous_unit_vec, unit_vec, sizeof(unit_vec)); // pl.previous_unit_vec[] = unit_vec[]
-        plannerT.setPrevious_unit_vec(unit_vec);
-        plannerT.setPrevious_nominal_speed(block.getNominal_speed());
+        blockBuffer[blockBufferHead] = block;
+        plannerT.setPreviousUnitVec(unitVec);
+        plannerT.setPreviousNominalSpeed(block.getNominalSpeed());
 
         // Update buffer head and next buffer head indices
-        block_buffer_head = next_buffer_head;
-        next_buffer_head = next_block_index(block_buffer_head);
+        blockBufferHead = nextBufferHead;
+        nextBufferHead = nextBlockIndex(blockBufferHead);
 
         // Update planner position
-//        memcpy(pl.position, target, sizeof(target)); // pl.position[] = target[]
         plannerT.setPosition(target);
 
-        planner_recalculate();
+        plannerRecalculate();
 //        block_buffer_tail ++ ;
-
+        System.out.println(block);
         String s = strToHex(block.toString());
         System.out.println(s);
     }
 
-    public static float max_allowable_speed(float acceleration, float target_velocity, float distance)
+    public static float maxAllowableSpeed(float acceleration, float targetVelocity, float distance)
     {
-        return (float) Math.sqrt(target_velocity*target_velocity-2*acceleration*distance);
+        return (float) Math.sqrt(targetVelocity * targetVelocity - 2 * acceleration * distance);
     }
 
-    public static void planner_recalculate()
+    public static void plannerRecalculate()
     {
-        planner_reverse_pass();
-        planner_recalculate_trapezoids();
-        planner_forward_pass();
+        plannerReversePass();
+        plannerRecalculateTrapezoids();
+        plannerForwardPass();
     }
 
-    public static void planner_reverse_pass()
+    public static void plannerReversePass()
     {
-        int block_index = block_buffer_head;
+        int blockIndex = blockBufferHead;
         BlockT[] block = new BlockT[3];
-        while(block_index != block_buffer_tail) {
-            block_index = prev_block_index(block_index);
+        while(blockIndex != blockBufferTail) {
+            blockIndex = prevBlockIndex(blockIndex);
             block[2]= block[1];
             block[1]= block[0];
-            block[0] = block_buffer[block_index];
-            planner_reverse_pass_kernel(block[0], block[1], block[2]);
+            block[0] = blockBuffer[blockIndex];
+            plannerReversePassKernel(block[0], block[1], block[2]);
         }
         // Skip buffer tail/first block to prevent over-writing the initial entry speed.
     }
 
-    public static int prev_block_index(int block_index)
+    public static int prevBlockIndex(int blockIndex)
     {
-        if (block_index == 0) { block_index = 18; }
-        block_index--;
-        return(block_index);
+        if (blockIndex == 0) { blockIndex = 18; }
+        blockIndex--;
+        return(blockIndex);
     }
 
-    public static void planner_reverse_pass_kernel(BlockT previous, BlockT current, BlockT next)
+    public static void plannerReversePassKernel(BlockT previous, BlockT current, BlockT next)
     {
 
         if (current == null) {
@@ -212,141 +206,141 @@ public class Planner {
 
         if (next != null) {
 
-            if (current.getEntry_speed() != current.getMax_entry_speed()) {
+            if (current.getEntrySpeed() != current.getMaxEntrySpeed()) {
 
-                if ((!current.getNominal_length_flag()) && (current.getMax_entry_speed() > next.getEntry_speed())) {
-                    current.setEntry_speed(
-                            Math.min( current.getMax_entry_speed(),
-                                    max_allowable_speed((float) -(10.0*60*60), next.getEntry_speed(), current.getMillimeters()))
+                if ((!current.getNominalLengthFlag()) && (current.getMaxEntrySpeed() > next.getEntrySpeed())) {
+                    current.setEntrySpeed(
+                            Math.min( current.getMaxEntrySpeed(),
+                                    maxAllowableSpeed((float) -(10.0*60*60), next.getEntrySpeed(), current.getMillimeters()))
                     );
                 } else {
-                    current.setEntry_speed(current.getMax_entry_speed());
+                    current.setEntrySpeed(current.getMaxEntrySpeed());
                 }
-                current.setRecalculate_flag(true);
+                current.setRecalculateFlag(true);
 
             }
         } // Skip last block. Already initialized and set for recalculation.
     }
 
-    public static void planner_recalculate_trapezoids()
+    public static void plannerRecalculateTrapezoids()
     {
-        int block_index = block_buffer_tail;
+        int blockIndex = blockBufferTail;
         BlockT current;
         BlockT next = null;
 
-        while(block_index != block_buffer_head) {
+        while(blockIndex != blockBufferHead) {
             current = next;
-            next = block_buffer[block_index];
+            next = blockBuffer[blockIndex];
             if (current != null) {
                 // Recalculate if current block entry or exit junction speed has changed.
-                if (current.getRecalculate_flag() || next.getRecalculate_flag()) {
+                if (current.getRecalculateFlag() || next.getRecalculateFlag()) {
                     // NOTE: Entry and exit factors always > 0 by all previous logic operations.
-                    calculate_trapezoid_for_block(current,
-                            current.getEntry_speed()/current.getNominal_speed(),
-                            next.getEntry_speed()/current.getNominal_speed());
-                    current.setRecalculate_flag(false); // Reset current only to ensure next trapezoid is computed
+                    calculateTrapezoidForBlock(current,
+                            current.getEntrySpeed()/current.getNominalSpeed(),
+                            next.getEntrySpeed()/current.getNominalSpeed());
+                    current.setRecalculateFlag(false); // Reset current only to ensure next trapezoid is computed
                 }
             }
-            block_index = next_block_index(block_index);
+            blockIndex = nextBlockIndex(blockIndex);
         }
-        // Last/newest block in buffer. Exit speed is set with MINIMUM_PLANNER_SPEED. Always recalculated.
-        calculate_trapezoid_for_block(next, next.getEntry_speed()/next.getNominal_speed(),
-                (float) (0.0/next.getNominal_speed()));
-        next.setRecalculate_flag(false);
+        // Last/newest block in buffer. Exit speed is set with MINIMUM PLANNER SPEED. Always recalculated.
+        calculateTrapezoidForBlock(next, next.getEntrySpeed() / next.getNominalSpeed(),
+                (float) (0.0 / next.getNominalSpeed()));
+        next.setRecalculateFlag(false);
     }
-    public static int next_block_index(int block_index)
+    public static int nextBlockIndex(int blockIndex)
     {
-        block_index++;
-        if (block_index == 18) { block_index = 0; }
-        return block_index;
+        blockIndex++;
+        if (blockIndex == 18) { blockIndex = 0; }
+        return blockIndex;
     }
 
-    public static void calculate_trapezoid_for_block(BlockT block, float entry_factor, float exit_factor)
+    public static void calculateTrapezoidForBlock(BlockT block, float entryFactor, float exitFactor)
     {
-        block.setInitial_rate(
-                (int) Math.ceil(block.getNominal_rate() * entry_factor)
+        block.setInitialRate(
+                (int) Math.ceil(block.getNominalRate() * entryFactor)
         ); // (step/min)
-        block.setFinal_rate(
-                (int) Math.ceil(block.getNominal_rate() * exit_factor)
+        block.setFinalRate(
+                (int) Math.ceil(block.getNominalRate() * exitFactor)
         ); // (step/min)
-        int acceleration_per_minute = (int) (block.getRate_delta()*50*60.0); // (step/min^2)
-        int accelerate_steps =
-                (int) Math.ceil(estimate_acceleration_distance(block.getInitial_rate(), block.getNominal_rate(), acceleration_per_minute));
-        int decelerate_steps =
-                (int) Math.floor(estimate_acceleration_distance(block.getNominal_rate(), block.getFinal_rate(), -acceleration_per_minute));
+        int accelerationPerMinute = (int) (block.getRateDelta() * 50 * 60.0); // (step/min^2)
+        int accelerateSteps =
+                (int) Math.ceil(estimateAccelerationDistance(block.getInitialRate(), block.getNominalRate(), accelerationPerMinute));
+        int decelerateSteps =
+                (int) Math.floor(estimateAccelerationDistance(block.getNominalRate(), block.getFinalRate(), -accelerationPerMinute));
 
-        int plateau_steps = block.getStep_event_count() - accelerate_steps - decelerate_steps;
+        int plateauSteps = block.getStepEventCount() - accelerateSteps - decelerateSteps;
 
-        if (plateau_steps < 0) {
-            accelerate_steps = (int) Math.ceil(
-                    intersection_distance(block.getInitial_rate(), block.getFinal_rate(), acceleration_per_minute, block.getStep_event_count()));
-            accelerate_steps = Math.max(accelerate_steps,0); // Check limits due to numerical round-off
-            accelerate_steps = Math.min(accelerate_steps,block.getStep_event_count());
-            plateau_steps = 0;
+        if (plateauSteps < 0) {
+            accelerateSteps = (int) Math.ceil(
+                    intersectionDistance(block.getInitialRate(), block.getFinalRate(), accelerationPerMinute, block.getStepEventCount()));
+            accelerateSteps = Math.max(accelerateSteps,0); // Check limits due to numerical round-off
+            accelerateSteps = Math.min(accelerateSteps,block.getStepEventCount());
+            plateauSteps = 0;
         }
 
-        block.setAccelerate_until(accelerate_steps);
-        block.setDecelerate_after(accelerate_steps+plateau_steps);
+        block.setAccelerateUntil(accelerateSteps);
+        block.setDecelerateAfter(accelerateSteps + plateauSteps);
     }
 
-    public static float estimate_acceleration_distance(float initial_rate, float target_rate, float acceleration)
+    public static float estimateAccelerationDistance(float initialRate, float targetRate, float acceleration)
     {
-        return (target_rate * target_rate - initial_rate * initial_rate)/(2 * acceleration);
+        return (targetRate * targetRate - initialRate * initialRate)/(2 * acceleration);
     }
 
-    public static float intersection_distance(float initial_rate, float final_rate, float acceleration, float distance)
+    public static float intersectionDistance(float initialRate, float finalRate, float acceleration, float distance)
     {
-        return( (2*acceleration*distance-initial_rate*initial_rate+final_rate*final_rate)/(4*acceleration) );
+        return( (2 * acceleration * distance - initialRate * initialRate + finalRate * finalRate) / (4 * acceleration));
     }
 
-    public static void planner_forward_pass()
+    public static void plannerForwardPass()
     {
-        int block_index = block_buffer_tail;
+        int blockIndex = blockBufferTail;
         BlockT[] block = new BlockT[3];
 
-        while(block_index != block_buffer_head) {
+        while(blockIndex != blockBufferHead) {
             block[0] = block[1];
             block[1] = block[2];
-            block[2] = block_buffer[block_index];
-            planner_forward_pass_kernel(block[0],block[1],block[2]);
-            block_index = next_block_index( block_index );
+            block[2] = blockBuffer[blockIndex];
+            plannerForwardPassKernel(block[0],block[1],block[2]);
+            blockIndex = nextBlockIndex( blockIndex );
         }
-        planner_forward_pass_kernel(block[1], block[2], null);
+        plannerForwardPassKernel(block[1], block[2], null);
     }
 
-    public static void planner_forward_pass_kernel(BlockT previous, BlockT current, BlockT next)
+    public static void plannerForwardPassKernel(BlockT previous, BlockT current, BlockT next)
     {
 
         if(previous == null) {
             return;
-        }  // Begin planning after buffer_tail
+        }  // Begin planning after buffer tail
 
-        if (!previous.getNominal_length_flag()) {
-            if (previous.getEntry_speed() < current.getEntry_speed()) {
-                float entry_speed = Math.min( current.getEntry_speed(),
-                        max_allowable_speed((float) -(10.0*60*60),previous.getEntry_speed(),previous.getMillimeters()) );
+        if (!previous.getNominalLengthFlag()) {
+            if (previous.getEntrySpeed() < current.getEntrySpeed()) {
+                float entrySpeed = Math.min( current.getEntrySpeed(),
+                        maxAllowableSpeed((float) -(10.0 * 60 * 60), previous.getEntrySpeed(), previous.getMillimeters()) );
 
                 // Check for junction speed change
-                if (current.getEntry_speed() != entry_speed) {
-                    current.setEntry_speed(entry_speed);
-                    current.setRecalculate_flag(true);
+                if (current.getEntrySpeed() != entrySpeed) {
+                    current.setEntrySpeed(entrySpeed);
+                    current.setRecalculateFlag(true);
                 }
             }
         }
     }
 
-    public static void setBlock_buffer_tail(int block_buffer_tail) {
-        Planner.block_buffer_tail = block_buffer_tail;
+    public static void setBlockBufferTail(int blockBufferTail) {
+        Planner.blockBufferTail = blockBufferTail;
     }
 
     public static String strToHex(String str) {
-        StringBuilder builder = new StringBuilder("");
+        StringBuilder builder = new StringBuilder();
         byte[] bs = str.getBytes();
         int bit;
-        for (int i = 0; i < bs.length; i++) {
-            bit = (bs[i] & 0xf0) >> 4;
+        for (byte b : bs) {
+            bit = (b & 0xf0) >> 4;
             builder.append(chars[bit]);
-            bit = bs[i] & 0x0f;
+            bit = b & 0x0f;
             builder.append(chars[bit]);
             builder.append(" ");
         }
@@ -354,7 +348,7 @@ public class Planner {
     }
 
     public static void main(String[] args) {
-        String a = strToHex("direction_bits=64, steps_x=1250, steps_y=750, steps_z=0, step_event_count=1250, nominal_speed=300.012345");
+        String a = strToHex("direction bits=64, steps x=1250, steps y=750, steps z=0, step event count=1250, nominal speed=300.012345");
 
         System.out.println(a);
     }
