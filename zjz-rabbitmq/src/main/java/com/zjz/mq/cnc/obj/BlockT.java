@@ -33,22 +33,22 @@ public class BlockT {
     @Override
     public String toString() {
         return
-                "direction_bits=" + this.directionBits + "" + ", " +
-                "steps_x=" + this.stepsX + "" + ", " +
-                "steps_y=" + this.stepsY + "" + ", " +
-                "steps_z=" + this.stepsZ + "" + ", " +
-                "step_event_count=" + this.stepEventCount + "" + ", " +
-                "nominal_speed=" + this.nominalSpeed + "" + ", " +
-                "entry_speed=" + this.entrySpeed + "" + ", " +
-                "max_entry_speed=" + this.maxEntrySpeed + "" + ", " +
+                "directionBits=" + this.directionBits + "" + ", " +
+                "stepsX=" + this.stepsX + "" + ", " +
+                "stepsY=" + this.stepsY + "" + ", " +
+                "stepsZ=" + this.stepsZ + "" + ", " +
+                "stepEventCount=" + this.stepEventCount + "" + ", " +
+                "nominalSpeed=" + this.nominalSpeed + "" + ", " +
+                "entrySpeed=" + this.entrySpeed + "" + ", " +
+                "maxEntrySpeed=" + this.maxEntrySpeed + "" + ", " +
                 "millimeters=" + this.millimeters + "" + ", " +
-                "recalculate_flag=" + this.recalculateFlag + "" + ", " +
-                "nominal_length_flag=" + this.nominalLengthFlag + "" + ", " +
-                "initial_rate=" + this.initialRate + "" + ", " +
-                "final_rate=" + this.finalRate + "" + ", " +
-                "rate_delta=" + this.rateDelta + "" + ", " +
-                "accelerate_until=" + this.accelerateUntil + "" + ", " +
-                "decelerate_after=" + this.decelerateAfter + "" + ", " +
-                "nominal_rate=" + this.nominalRate;
+                "recalculateFlag=" + this.recalculateFlag + "" + ", " +
+                "nominalLengthFlag=" + this.nominalLengthFlag + "" + ", " +
+                "initialRate=" + this.initialRate + "" + ", " +
+                "finalRate=" + this.finalRate + "" + ", " +
+                "rateDelta=" + this.rateDelta + "" + ", " +
+                "accelerateUntil=" + this.accelerateUntil + "" + ", " +
+                "decelerateAfter=" + this.decelerateAfter + "" + ", " +
+                "nominalRate=" + this.nominalRate;
     }
 }

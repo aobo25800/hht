@@ -347,9 +347,15 @@ public class Planner {
         return builder.toString().trim();
     }
 
-    public static void main(String[] args) {
-        String a = strToHex("direction bits=64, steps x=1250, steps y=750, steps z=0, step event count=1250, nominal speed=300.012345");
+    public static BlockT planGetCurrentBlock() {
+        if (blockBufferHead == blockBufferTail) { return null; }
+        return blockBuffer[blockBufferTail];
+    }
 
-        System.out.println(a);
+    public static void planDiscardCurrentBlock()
+    {
+        if (blockBufferHead != blockBufferTail) {
+            blockBufferTail = nextBlockIndex( blockBufferTail );
+        }
     }
 }

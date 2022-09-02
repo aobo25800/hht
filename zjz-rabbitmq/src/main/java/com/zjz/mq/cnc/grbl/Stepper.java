@@ -37,8 +37,6 @@ public class Stepper {
         //清除TIM3更新中断标志
         TIM3_timer = 0;
 
-        // Set the direction pins a couple of nanoseconds before we step the steppers
-        // 在设置步进脉冲引脚前几个纳秒前设置方向引脚
         log.info("DIRECTION_GPIO---X_DIRECTION_GPIO_PIN-----{}",bitIsTrue(currentBlock.getDirectionBits(),bit(5)));
         log.info("DIRECTION_GPIO---Y_DIRECTION_GPIO_PIN-----{}",bitIsTrue(currentBlock.getDirectionBits(),bit(6)));
         log.info("DIRECTION_GPIO---Z_DIRECTION_GPIO_PIN-----{}",bitIsTrue(currentBlock.getDirectionBits(),bit(7)));
@@ -54,8 +52,7 @@ public class Stepper {
         // If there is no current block, attempt to pop one from the buffer
         if (currentBlock == null) {
             // Anything in the buffer? If so, initialize next motion.
-            // todo 获取block对象
-//            currentBlock = plan_get_current_block();
+            currentBlock = Planner.planGetCurrentBlock();
             if (currentBlock != null) {
                 st.setMinSafeRate(currentBlock.getRateDelta() + (currentBlock.getRateDelta() >> 1)); // 1.5 x rate_delta
                 st.setCounterX(-(currentBlock.getStepEventCount() >> 1));
@@ -97,20 +94,10 @@ public class Stepper {
             // While in block steps, check for de/ac-celeration events and execute them accordingly.
             if (st.getStepEventsCompleted() < currentBlock.getStepEventCount()) {
                 if (sys.getState() == SystemConstant.STATE_HOLD) {
-                    // Check for and execute feed hold by enforcing a steady deceleration from the moment of
-                    // execution. The rate of deceleration is limited by rate_delta and will never decelerate
-                    // faster or slower than in normal operation. If the distance required for the feed hold
-                    // deceleration spans more than one block, the initial rate of the following blocks are not
-                    // updated and deceleration is continued according to their corresponding rate_delta.
-                    // NOTE: The trapezoid tick cycle counter is not updated intentionally. This ensures that
-                    // the deceleration is smooth regardless of where the feed hold is initiated and if the
-                    // deceleration distance spans multiple blocks.
+
                     if ( iterateTrapezoidCycleCounter() ) {
                         // If deceleration complete, set system flags and shutdown steppers.
                         if (st.getTrapezoidAdjustedRate() <= currentBlock.getRateDelta()) {
-                            // Just go idle. Do not NULL current block. The bresenham algorithm variables must
-                            // remain intact to ensure the stepper path is exactly the same. Feed hold is still
-                            // active and is released after the buffer has been reinitialized.
 //                            st_go_idle();
 //                            bit_true(sys.execute,EXEC_CYCLE_STOP); // Flag main program that feed hold is complete.
                         } else {
@@ -120,13 +107,6 @@ public class Stepper {
                     }
 
                 } else {
-                    // The trapezoid generator always checks step event location to ensure de/ac-celerations are
-                    // executed and terminated at exactly the right time. This helps prevent over/under-shooting
-                    // the target position and speed.
-                    // NOTE: By increasing the ACCELERATION_TICKS_PER_SECOND in config.h, the resolution of the
-                    // discrete velocity changes increase and accuracy can increase as well to a point. Numerical
-                    // round-off errors can effect this, if set too high. This is important to note if a user has
-                    // very high acceleration and/or feedrate requirements for their machine.
                     if (st.getStepEventsCompleted() < currentBlock.getAccelerateUntil()) {
                         // Iterate cycle counter and check if speeds need to be increased.
                         if ( iterateTrapezoidCycleCounter() ) {
@@ -138,10 +118,6 @@ public class Stepper {
                             setStepEventsPerMinute(st.getTrapezoidAdjustedRate());
                         }
                     } else if (st.getStepEventsCompleted() >= currentBlock.getDecelerateAfter()) {
-                        // Reset trapezoid tick cycle counter to make sure that the deceleration is performed the
-                        // same every time. Reset to CYCLES_PER_ACCELERATION_TICK/2 to follow the midpoint rule for
-                        // an accurate approximation of the deceleration curve. For triangle profiles, down count
-                        // from current cycle counter to ensure exact deceleration curve.
                         if (st.getStepEventsCompleted() == currentBlock.getDecelerateAfter()) {
                             if (st.getTrapezoidAdjustedRate() == currentBlock.getNominalRate()) {
                                 st.setTrapezoidTickCycleCounter(CYCLES_PER_ACCELERATION_TICK/2); // Trapezoid profile
@@ -151,14 +127,6 @@ public class Stepper {
                         } else {
                             // Iterate cycle counter and check if speeds need to be reduced.
                             if ( iterateTrapezoidCycleCounter() ) {
-                                // NOTE: We will only do a full speed reduction if the result is more than the minimum safe
-                                // rate, initialized in trapezoid reset as 1.5 x rate_delta. Otherwise, reduce the speed by
-                                // half increments until finished. The half increments are guaranteed not to exceed the
-                                // CNC acceleration limits, because they will never be greater than rate_delta. This catches
-                                // small errors that might leave steps hanging after the last trapezoid tick or a very slow
-                                // step rate at the end of a full stop deceleration in certain situations. The half rate
-                                // reductions should only be called once or twice per block and create a nice smooth
-                                // end deceleration.
                                 if (st.getTrapezoidAdjustedRate() > st.getMinSafeRate()) {
                                     st.setTrapezoidAdjustedRate(st.getTrapezoidAdjustedRate() - currentBlock.getRateDelta());
                                 } else {
@@ -182,10 +150,11 @@ public class Stepper {
             } else {
                 // If current block is finished, reset pointer
                 currentBlock = null;
-//                plan_discard_current_block();
+                Planner.planDiscardCurrentBlock();
             }
         }
-//        out_bits ^= settings.invert_mask;  // Apply step and direction invert mask
+        int invert_mask = (1 << 6) | (1 << 7);
+        out_bits ^= invert_mask;  // Apply step and direction invert mask
         busy = false;
     }
 
