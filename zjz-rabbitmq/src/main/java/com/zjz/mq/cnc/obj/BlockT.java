@@ -10,6 +10,7 @@ import lombok.Data;
 public class BlockT {
 
     // Fields used by the bresenham algorithm for tracing the line
+    // 方向控制 1：正  0：负
     private int directionBits;            // The direction bit set for this block (refers to *_DIRECTION_BIT in config.h)
     private int stepsX, stepsY, stepsZ; // Step count along each axis    58-X 59-Y 5A-Z      沿每个轴的步数
     private int stepEventCount;          // 完成此块所需的最大步骤事件数
@@ -24,7 +25,7 @@ public class BlockT {
 
     // Settings for the trapezoid generator
     private int initialRate;              // The step rate at start of block   梯形中间开始的速率
-    private int finalRate;                // The step rate at end of block
+    private int finalRate;                // The step rate at end of block  块结束时的步率
     private int rateDelta;                 // 改变速度时要加减的步数/分钟(必须是正的)
     private int accelerateUntil;          // 停止加速度的阶跃事件的索引
     private int decelerateAfter;          // 开始减速的阶跃事件的索引

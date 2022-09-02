@@ -160,8 +160,8 @@ public class Planner {
         plannerRecalculate();
 //        block_buffer_tail ++ ;
         System.out.println(block);
-        String s = strToHex(block.toString());
-        System.out.println(s);
+//        String s = strToHex(block.toString());
+//        System.out.println(s);
     }
 
     public static float maxAllowableSpeed(float acceleration, float targetVelocity, float distance)
@@ -243,10 +243,12 @@ public class Planner {
             }
             blockIndex = nextBlockIndex(blockIndex);
         }
-        // Last/newest block in buffer. Exit speed is set with MINIMUM PLANNER SPEED. Always recalculated.
-        calculateTrapezoidForBlock(next, next.getEntrySpeed() / next.getNominalSpeed(),
-                (float) (0.0 / next.getNominalSpeed()));
-        next.setRecalculateFlag(false);
+        if (next != null) {
+            // Last/newest block in buffer. Exit speed is set with MINIMUM PLANNER SPEED. Always recalculated.
+            calculateTrapezoidForBlock(next, next.getEntrySpeed() / next.getNominalSpeed(),
+                    (float) (0.0 / next.getNominalSpeed()));
+            next.setRecalculateFlag(false);
+        }
     }
     public static int nextBlockIndex(int blockIndex)
     {
